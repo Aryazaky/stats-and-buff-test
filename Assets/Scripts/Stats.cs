@@ -8,6 +8,7 @@ public class Stats
 {
     private readonly Dictionary<Stat.StatType, Stat> baseStats;
     private readonly Stat.Modifiers modifiers = new();
+    private readonly HashSet<Stat.StatType> currentlyAccessed = new();
 
     public Stat.Modifiers Modifiers => modifiers;
 
@@ -20,14 +21,27 @@ public class Stats
     {
         get
         {
-            if (TryGetBaseStat(type, out var stat))
+            if (currentlyAccessed.Contains(type))
             {
-                var query = new Stat.Query(stat); // Error Stackoverflow
-                modifiers.PerformQuery(this, query);
-                return query;
+                throw new InvalidOperationException($"Circular access detected for stat: {type}. Check modifiers and prerequisites.");
             }
 
-            else throw new Exception($"Stat of type {type} not found.");
+            if (TryGetBaseStat(type, out var stat))
+            {
+                currentlyAccessed.Add(type);
+                try
+                {
+                    var query = new Stat.Query(stat);
+                    modifiers.PerformQuery(this, query);
+                    return query;
+                }
+                finally
+                {
+                    currentlyAccessed.Remove(type);
+                }
+            }
+
+            throw new Exception($"Stat of type {type} not found.");
         }
     }
 

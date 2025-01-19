@@ -11,45 +11,66 @@ public readonly partial struct Stat
             event Action OnExpired;
         }
 
-        public delegate void Operation(object sender, Query query);
-        public delegate bool ActivePrerequisite(object sender, Query query); // To allow enable or disable without expiring the modifier
-        public event Action<Modifier> OnDispose;
+        public readonly struct Contexts
+        {
+            public readonly object sender;
+            public readonly Query query;
+            public readonly Modifier modifier;
 
-        private int priority;
-        private Operation operation;
-        private ActivePrerequisite activePrerequisite;
+            public Contexts(object sender, Query query, Modifier modifier)
+            {
+                this.sender = sender;
+                this.query = query;
+                this.modifier = modifier;
+            }
+        }
+
+        public delegate void Operation(Contexts contexts);
+        public delegate bool ActivePrerequisite(Contexts contexts); // To allow enable or disable without expiring the modifier
+        public event Action<Modifier> OnDispose;
+        public event Action<Modifier> OnInvoke;
+        public event Action<Modifier> OnInvokeFail;
+
+        private readonly Operation operation;
+        private readonly ActivePrerequisite activePrerequisite;
         public int InvokedCount { get; private set; }
 
         public Modifier(int priority, Operation operation, ActivePrerequisite activePrerequisite = null, IExpiryNotifier expiryNotifier = null)
         {
-            this.priority = priority;
+            Priority = priority;
             this.operation = operation;
             if (expiryNotifier != null)
             {
                 expiryNotifier.OnExpired += () => IsExpired = true;
             }
-            if (activePrerequisite != null)
-            {
-                this.activePrerequisite = activePrerequisite;
-            }
-            else this.activePrerequisite = (sender, query) => true;
+            this.activePrerequisite = activePrerequisite ?? (contexts => true);
         }
 
-        public int Priority => priority;
+        public int Priority { get; }
 
         public bool IsExpired { get; private set; }
 
         public virtual void Handle(object sender, Query query)
         {
-            if (activePrerequisite(sender, query) && !IsExpired)
+            if (!IsExpired)
             {
-                operation(sender, query);
-                InvokedCount++;
+                Contexts contexts = new Contexts(sender, query, this);
+                if (activePrerequisite(contexts))
+                {
+                    operation(contexts);
+                    InvokedCount++;
+                    OnInvoke?.Invoke(this);
+                }
+                else
+                {
+                    OnInvokeFail?.Invoke(this);
+                }
             }
         }
 
         public void Dispose()
         {
+            IsExpired = true; // Might be redundant, but could be useful when calling Dispose manually. 
             OnDispose?.Invoke(this);
         }
     }
@@ -60,15 +81,12 @@ public readonly partial struct Stat
 
         public void PerformQuery(object sender, Query query)
         {
-            foreach (var modifier in modifiers)
+            foreach (var modifier in modifiers.ToArray())
             {
                 modifier.Handle(sender, query);
             }
 
-            foreach (var modifier in modifiers.Where(mod => mod.IsExpired))
-            {
-                modifier.Dispose();
-            }
+            RemoveModifiers(mod => mod.IsExpired);
         }
 
         public void AddModifier(Modifier modifier)
@@ -76,6 +94,14 @@ public readonly partial struct Stat
             modifiers.Add(modifier);
             modifiers.Sort((x, y) => x.Priority.CompareTo(y.Priority));
             modifier.OnDispose += mod => modifiers.Remove(mod);
+        }
+
+        public void RemoveModifiers(Func<Modifier, bool> predicate)
+        {
+            foreach (var modifier in modifiers.Where(predicate).ToArray())
+            {
+                modifier.Dispose();
+            }
         }
     }
 }
