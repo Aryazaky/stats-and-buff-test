@@ -20,7 +20,7 @@ public class Stats
     {
         get
         {
-            if (baseStats.TryGetValue(type, out var stat))
+            if (TryGetBaseStat(type, out var stat))
             {
                 var query = new Stat.Query(stat); // Error Stackoverflow
                 modifiers.PerformQuery(this, query);
@@ -29,5 +29,15 @@ public class Stats
 
             else throw new Exception($"Stat of type {type} not found.");
         }
+    }
+
+    public bool TryGetBaseStat(Stat.StatType type, out Stat stat)
+    {
+        return baseStats.TryGetValue(type, out stat);
+    }
+
+    public bool Contains(Stat.StatType type)
+    {
+        return baseStats.ContainsKey(type);
     }
 }

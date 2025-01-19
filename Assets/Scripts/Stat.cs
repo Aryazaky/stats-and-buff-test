@@ -1,6 +1,6 @@
 ﻿using System;
 
-public partial struct Stat
+public readonly partial struct Stat
 {
     private readonly StatType _type;
     private readonly float _value;
@@ -39,7 +39,7 @@ public partial struct Stat
 
     public override string ToString()
     {
-        return $"{Type}: {Value}{(Max.HasValue ? $"/{Max}" : "")}";
+        return $"{Type}: {Value}{(Max.HasValue ? $"/{Max}" : "")}{(Min.HasValue ? $" (min {Min.Value})" : "")}";
     }
 }
 

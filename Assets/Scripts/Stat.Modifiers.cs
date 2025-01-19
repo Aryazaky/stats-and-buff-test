@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-public partial struct Stat
+public readonly partial struct Stat
 {
     public abstract class Modifier : IDisposable
     {
@@ -12,12 +12,14 @@ public partial struct Stat
         }
 
         public delegate void Operation(object sender, Query query);
-        public delegate bool ActivePrerequisite(); // To allow enable or disable without expiring the modifier
+        public delegate bool ActivePrerequisite(object sender, Query query); // To allow enable or disable without expiring the modifier
+        public event Action<Modifier> OnDispose;
 
         private int priority;
         private Operation operation;
         private ActivePrerequisite activePrerequisite;
-        public event Action<Modifier> OnDispose;
+        public int InvokedCount { get; private set; }
+
         public Modifier(int priority, Operation operation, ActivePrerequisite activePrerequisite = null, IExpiryNotifier expiryNotifier = null)
         {
             this.priority = priority;
@@ -30,7 +32,7 @@ public partial struct Stat
             {
                 this.activePrerequisite = activePrerequisite;
             }
-            else this.activePrerequisite = () => true;
+            else this.activePrerequisite = (sender, query) => true;
         }
 
         public int Priority => priority;
@@ -39,9 +41,10 @@ public partial struct Stat
 
         public virtual void Handle(object sender, Query query)
         {
-            if (activePrerequisite() && !IsExpired)
+            if (activePrerequisite(sender, query) && !IsExpired)
             {
                 operation(sender, query);
+                InvokedCount++;
             }
         }
 

@@ -1,4 +1,4 @@
-﻿public partial struct Stat
+﻿public readonly partial struct Stat
 {
     public enum StatType
     {
