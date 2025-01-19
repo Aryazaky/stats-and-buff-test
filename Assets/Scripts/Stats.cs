@@ -43,6 +43,28 @@ public class Stats
 
             throw new Exception($"Stat of type {type} not found.");
         }
+        set 
+        { 
+            if (Contains(type))
+            {
+                // TODO: Make some processing? Or a warning because a set accessor is destructive?
+                if (value.Type == type)
+                {
+                    baseStats[type] = value;
+                }
+                else throw new ArgumentException($"Type mismatch. Tried to assign a {type} with a {value}.");
+            }
+            else throw new Exception($"Unable to assign stat of type {type}. It was not exist before.");
+        }
+    }
+
+    public void ApplyChange(Stat.StatType type, float delta)
+    {
+        if (TryGetBaseStat(type, out var stat))
+        {
+            baseStats[type] = stat.UpdateValue(delta);
+        }
+        else throw new Exception($"Stat of type {type} not found.");
     }
 
     public bool TryGetBaseStat(Stat.StatType type, out Stat stat)

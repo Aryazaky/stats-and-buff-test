@@ -26,20 +26,25 @@ public class Testing : MonoBehaviour
 
         Stat.Modifier.Operation healthPlusInvokedCount = (contexts) =>
         {
-            contexts.query.value += contexts.modifier.InvokedCount;
+            contexts.query.value += 1;
+            if (contexts.sender is Stats s)
+            {
+                //s.ApplyChange(contexts.query.type, contexts.modifier.InvokedCount);
+                s[contexts.query.type] = contexts.query;
+            }
         };
 
         var healthHealModifier1 = new StatModifier(
             Stat.StatType.Health,
-            priority: 1,
             operation: healthPlusInvokedCount,
+            priority: 1,
             activePrerequisite: isHealthBelowHalf
         );
 
         var healthHealModifier2 = new StatModifier(
             Stat.StatType.Health,
-            priority: 2,
             operation: healthPlusInvokedCount,
+            priority: 2,
             activePrerequisite: isHealthBelowHalf
         );
 
@@ -49,7 +54,7 @@ public class Testing : MonoBehaviour
 
         stats.Mediator.AddModifier(healthHealModifier1);
         Debug.Log($"Health: {stats[Stat.StatType.Health]}"); // HP: 10
-        stats.Mediator.AddModifier(healthHealModifier2);
+        //stats.Mediator.AddModifier(healthHealModifier2);
         Debug.Log($"Health: {stats[Stat.StatType.Health]}"); // HP: 11
         Debug.Log($"Health: {stats[Stat.StatType.Health]}"); // HP: 13
         Debug.Log($"Health: {stats[Stat.StatType.Health]}"); // HP: 12

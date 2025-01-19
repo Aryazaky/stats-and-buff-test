@@ -37,6 +37,51 @@ public readonly partial struct Stat
         _value = MathF.Round(value, _decimalPlaces);
     }
 
+    public Stat UpdateValue(float delta)
+    {
+        return new Stat(Type, Value + delta, Min, Max, _decimalPlaces);
+    }
+
+    public static Stat operator +(Stat a, Stat b)
+    {
+        if (a.Type != b.Type)
+        {
+            throw new InvalidOperationException($"Cannot add Stats of different types: {a.Type} and {b.Type}");
+        }
+
+        return new Stat(a.Type, a.Value + b.Value, a.Min, a.Max, a._decimalPlaces);
+    }
+
+    public static Stat operator -(Stat a, Stat b)
+    {
+        if (a.Type != b.Type)
+        {
+            throw new InvalidOperationException($"Cannot subtract Stats of different types: {a.Type} and {b.Type}");
+        }
+
+        return new Stat(a.Type, a.Value - b.Value, a.Min, a.Max, a._decimalPlaces);
+    }
+
+    public static Stat operator +(Stat stat, float value)
+    {
+        return new Stat(stat.Type, stat.Value + value, stat.Min, stat.Max, stat._decimalPlaces);
+    }
+
+    public static Stat operator +(float value, Stat stat)
+    {
+        return stat + value; // Reuse the existing logic
+    }
+
+    public static Stat operator -(Stat stat, float value)
+    {
+        return new Stat(stat.Type, stat.Value - value, stat.Min, stat.Max, stat._decimalPlaces);
+    }
+
+    public static Stat operator -(float value, Stat stat)
+    {
+        return new Stat(stat.Type, value - stat.Value, stat.Min, stat.Max, stat._decimalPlaces);
+    }
+
     public override string ToString()
     {
         return $"{Type}: {Value}{(Max.HasValue ? $"/{Max}" : "")}{(Min.HasValue ? $" (min {Min.Value})" : "")}";

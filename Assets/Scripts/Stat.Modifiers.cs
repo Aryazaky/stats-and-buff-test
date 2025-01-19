@@ -1,16 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 public readonly partial struct Stat
 {
     public abstract class Modifier : IDisposable
     {
-        public interface IExpiryNotifier // To end this once and for all
-        {
-            event Action OnExpired;
-        }
-
         public readonly struct Contexts
         {
             public readonly object sender;
@@ -33,18 +29,17 @@ public readonly partial struct Stat
 
         private readonly Operation operation;
         private readonly ActivePrerequisite activePrerequisite;
-        public int InvokedCount { get; private set; }
 
-        public Modifier(int priority, Operation operation, ActivePrerequisite activePrerequisite = null, IExpiryNotifier expiryNotifier = null)
+        public Modifier(Operation operation, int priority = 0, ActivePrerequisite activePrerequisite = null)
         {
             Priority = priority;
             this.operation = operation;
-            if (expiryNotifier != null)
-            {
-                expiryNotifier.OnExpired += () => IsExpired = true;
-            }
             this.activePrerequisite = activePrerequisite ?? (contexts => true);
         }
+
+        public float LastInvokeTime { get; private set; }
+
+        public int InvokedCount { get; private set; }
 
         public int Priority { get; }
 
@@ -59,6 +54,7 @@ public readonly partial struct Stat
                 {
                     operation(contexts);
                     InvokedCount++;
+                    LastInvokeTime = Time.time;
                     OnInvoke?.Invoke(this);
                 }
                 else
@@ -109,7 +105,7 @@ public readonly partial struct Stat
 public class StatModifier : Stat.Modifier
 {
     private Stat.StatType type;
-    public StatModifier(Stat.StatType type, int priority, Operation operation, ActivePrerequisite activePrerequisite = null, IExpiryNotifier expiryNotifier = null) : base(priority, operation, activePrerequisite, expiryNotifier)
+    public StatModifier(Stat.StatType type, Operation operation, int priority = 0, ActivePrerequisite activePrerequisite = null) : base(operation, priority, activePrerequisite)
     {
         this.type = type;
     }
