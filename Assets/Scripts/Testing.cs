@@ -27,7 +27,7 @@ public class Testing : MonoBehaviour
         Stat.Modifier.Operation healByOne = (sender, query) =>
         {
             // Simply add 1 to the current value
-            return query.value + 1;
+            query.value += 1;
         };
 
         // Create and Add the Modifier

@@ -22,7 +22,7 @@ public class Stats
         {
             if (baseStats.TryGetValue(type, out var stat))
             {
-                var query = new Stat.Query(stat);
+                var query = new Stat.Query(stat); // Error Stackoverflow
                 modifiers.PerformQuery(this, query);
                 return query;
             }

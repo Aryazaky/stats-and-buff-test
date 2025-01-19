@@ -11,7 +11,7 @@ public partial struct Stat
             event Action OnExpired;
         }
 
-        public delegate float Operation(object sender, Query query);
+        public delegate void Operation(object sender, Query query);
         public delegate bool ActivePrerequisite(); // To allow enable or disable without expiring the modifier
 
         private int priority;
@@ -41,7 +41,7 @@ public partial struct Stat
         {
             if (activePrerequisite() && !IsExpired)
             {
-                query.value = operation(sender, query);
+                operation(sender, query);
             }
         }
 

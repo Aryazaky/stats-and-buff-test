@@ -1,5 +1,6 @@
 ﻿public partial struct Stat
 {
+    // Stat but a class and the properties can freely be changed before converted back into a Stat
     public class Query
     {
         public StatType type { get; }
