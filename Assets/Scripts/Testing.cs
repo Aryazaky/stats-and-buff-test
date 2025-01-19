@@ -47,9 +47,9 @@ public class Testing : MonoBehaviour
         expiryNotifier.TrackModifier(healthHealModifier1);
         expiryNotifier.TrackModifier(healthHealModifier2);
 
-        stats.Modifiers.AddModifier(healthHealModifier1);
+        stats.Mediator.AddModifier(healthHealModifier1);
         Debug.Log($"Health: {stats[Stat.StatType.Health]}"); // HP: 10
-        stats.Modifiers.AddModifier(healthHealModifier2);
+        stats.Mediator.AddModifier(healthHealModifier2);
         Debug.Log($"Health: {stats[Stat.StatType.Health]}"); // HP: 11
         Debug.Log($"Health: {stats[Stat.StatType.Health]}"); // HP: 13
         Debug.Log($"Health: {stats[Stat.StatType.Health]}"); // HP: 12

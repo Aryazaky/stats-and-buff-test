@@ -75,7 +75,7 @@ public readonly partial struct Stat
         }
     }
 
-    public class Modifiers
+    public class Mediator
     {
         private readonly List<Modifier> modifiers = new();
 

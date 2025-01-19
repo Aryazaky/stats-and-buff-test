@@ -7,10 +7,10 @@ using System.Linq;
 public class Stats
 {
     private readonly Dictionary<Stat.StatType, Stat> baseStats;
-    private readonly Stat.Modifiers modifiers = new();
+    private readonly Stat.Mediator mediator = new();
     private readonly HashSet<Stat.StatType> currentlyAccessed = new();
 
-    public Stat.Modifiers Modifiers => modifiers;
+    public Stat.Mediator Mediator => mediator;
 
     public Stats(params Stat[] stats)
     {
@@ -32,7 +32,7 @@ public class Stats
                 try
                 {
                     var query = new Stat.Query(stat);
-                    modifiers.PerformQuery(this, query);
+                    mediator.PerformQuery(this, query);
                     return query;
                 }
                 finally
