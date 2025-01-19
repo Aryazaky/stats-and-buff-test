@@ -7,6 +7,15 @@ public readonly partial struct Stat
 {
     public abstract class Modifier : IDisposable
     {
+        public static class PriorityType
+        {
+            public const int Default = 0;
+            public const int Boost = 1; // Equipment stat boosts and such. They're additive
+            public const int Multiplicative = 2; // Buffs or debuffs
+            public const int Offset = 3; // This is also additive, but done normally. For flat stat increase/decrease unaffected by buffs
+            public const int Override = 4; // Evil, the ultimate No U. Could set the hard work we all did to calculate all that to 0 for all I know. 
+        }
+
         public readonly struct Contexts
         {
             public readonly object sender;
@@ -112,7 +121,7 @@ public class StatModifier : Stat.Modifier
 
     public override void Handle(object sender, Stat.Query query)
     {
-        if (query.type == type)
+        if (query.Stat.Type == type)
         {
             base.Handle(sender, query);
         }

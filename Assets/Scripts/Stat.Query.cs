@@ -1,29 +1,15 @@
 ﻿public readonly partial struct Stat
 {
-    // Stat but a class and the properties can freely be changed before converted back into a Stat
+    // A class with properties that can be viewed or freely be changed while it undergone a journey through multiple modifiers. 
     public class Query
     {
-        public StatType type { get; }
-        public float value;
-        public float? min;
-        public float? max;
-        public Query(StatType type, float value, float? min = null, float? max = null)
+        // Get only properties
+        public CapturedStats Stats { get; }
+        public MutableStat Stat { get; }
+        public Query(Stat stat, Stats stats)
         {
-            this.type = type;
-            this.value = value;
-            this.min = min;
-            this.max = max;
-        }
-        public Query(Stat stat)
-        {
-            this.type = stat.Type;
-            this.value = stat.Value;
-            this.min = stat.Min;
-            this.max = stat.Max;
-        }
-        public static implicit operator Stat(Query query)
-        {
-            return new Stat(type: query.type, value: query.value, min: query.min, max: query.max);
+            this.Stat = new MutableStat(stat);
+            this.Stats = new CapturedStats(stats);
         }
     }
 }

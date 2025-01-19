@@ -31,9 +31,9 @@ public class Stats
                 currentlyAccessed.Add(type);
                 try
                 {
-                    var query = new Stat.Query(stat);
+                    var query = new Stat.Query(stat, this);
                     mediator.PerformQuery(this, query);
-                    return query;
+                    return query.Stat;
                 }
                 finally
                 {
@@ -76,4 +76,50 @@ public class Stats
     {
         return baseStats.ContainsKey(type);
     }
+
+    public IEnumerable<Stat.StatType> Types => baseStats.Keys;
+}
+
+public class CapturedStats
+{
+    private readonly Dictionary<Stat.StatType, Stat> stats;
+
+    public CapturedStats(Stats stats)
+    {
+        if (stats == null) throw new ArgumentNullException(nameof(stats));
+
+        this.stats = new Dictionary<Stat.StatType, Stat>();
+        foreach (var type in stats.Types)
+        {
+            this.stats[type] = stats[type];
+        }
+    }
+
+    public Stat this[Stat.StatType type]
+    {
+        get
+        {
+            if (stats.TryGetValue(type, out var value))
+            {
+                return value;
+            }
+            else
+            {
+                throw new Exception($"Stat of type {type} not found.");
+            }
+        }
+        set
+        {
+            if (stats.ContainsKey(type))
+            {
+                if (value.Type == type)
+                {
+                    stats[type] = value;
+                }
+                else throw new ArgumentException($"Type mismatch. Tried to assign a {type} with a {value}.");
+            }
+        }
+    }
+
+    public IEnumerable<KeyValuePair<Stat.StatType, Stat>> Values() => stats;
 }
