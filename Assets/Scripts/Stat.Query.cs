@@ -4,12 +4,14 @@
     public class Query
     {
         // Get only properties
-        public CapturedStats Stats { get; }
+        public Stats Stats { get; }
+        public Stats Modifiable { get; }
         public MutableStat Stat { get; }
-        public Query(Stat stat, Stats stats)
+        public Query(Stats stats, Stat stat)
         {
-            this.Stat = new MutableStat(stat);
-            this.Stats = new CapturedStats(stats);
+            Stat = new MutableStat(stat);
+            Stats = stats;
+            Modifiable = new Stats(stats.Enumerable);
         }
     }
 }

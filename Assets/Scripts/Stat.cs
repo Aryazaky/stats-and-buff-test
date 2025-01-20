@@ -8,15 +8,15 @@ public readonly partial struct Stat
         public float Value;
         public float? Min;
         public float? Max;
-        public float precision;
+        public float Precision { get; }
 
         public MutableStat(Stat stat)
         {
-            this.Value = stat.Value;
-            this.precision = stat.precision;
-            this.Type = stat.type;
-            this.Min = stat.Min;
-            this.Max = stat.Max;
+            Value = stat.Value;
+            Precision = stat._precision;
+            Type = stat.Type;
+            Min = stat.Min;
+            Max = stat.Max;
         }
 
         public static implicit operator Stat(MutableStat stat)
@@ -25,44 +25,45 @@ public readonly partial struct Stat
         }
     }
 
-    private readonly StatType type;
-    private readonly float value;
-    private readonly float? min;
-    private readonly float? max;
-    private readonly int precision;
+    private readonly int _precision;
 
-    public readonly StatType Type => type;
+    public StatType Type { get; }
 
-    public readonly float Value => value;
+    public float Value { get; }
 
-    public readonly float? Min => min;
+    public float? Min { get; }
 
-    public readonly float? Max => max;
+    public float? Max { get; }
 
     public Stat(StatType type, float value, float? min = 0, float? max = null, int precision = 0)
     {
         if (precision < 0)
             throw new ArgumentException("Decimal places cannot be negative.", nameof(precision));
 
-        this.type = type;
-        this.precision = precision;
+        Type = type;
+        _precision = precision;
 
         if (max.HasValue && min.HasValue && max.Value < min.Value)
         {
             throw new ArgumentException($"max ({max.Value}) cannot be less than min ({min.Value}).", nameof(min));
         }
 
-        this.max = max;
-        this.min = min;
-        this.value = 0;
+        Max = max;
+        Min = min;
+        Value = 0;
         value = Max.HasValue ? MathF.Min(Max.Value, value) : value;
         value = Min.HasValue ? MathF.Max(Min.Value, value) : value;
-        this.value = MathF.Round(value, this.precision);
+        Value = MathF.Round(value, _precision);
     }
 
     public Stat UpdateValue(float delta)
     {
-        return new Stat(Type, Value + delta, Min, Max, precision);
+        return new Stat(Type, Value + delta, Min, Max, _precision);
+    }
+
+    public Stat SetValue(float value)
+    {
+        return new Stat(Type, value, Min, Max, _precision);
     }
 
     public static Stat operator +(Stat a, Stat b)
@@ -72,7 +73,7 @@ public readonly partial struct Stat
             throw new InvalidOperationException($"Cannot add Stats of different types: {a.Type} and {b.Type}");
         }
 
-        return new Stat(a.Type, a.Value + b.Value, a.Min, a.Max, a.precision);
+        return new Stat(a.Type, a.Value + b.Value, a.Min, a.Max, a._precision);
     }
 
     public static Stat operator -(Stat a, Stat b)
@@ -82,12 +83,12 @@ public readonly partial struct Stat
             throw new InvalidOperationException($"Cannot subtract Stats of different types: {a.Type} and {b.Type}");
         }
 
-        return new Stat(a.Type, a.Value - b.Value, a.Min, a.Max, a.precision);
+        return new Stat(a.Type, a.Value - b.Value, a.Min, a.Max, a._precision);
     }
 
     public static Stat operator +(Stat stat, float value)
     {
-        return new Stat(stat.Type, stat.Value + value, stat.Min, stat.Max, stat.precision);
+        return new Stat(stat.Type, stat.Value + value, stat.Min, stat.Max, stat._precision);
     }
 
     public static Stat operator +(float value, Stat stat)
@@ -97,17 +98,17 @@ public readonly partial struct Stat
 
     public static Stat operator -(Stat stat, float value)
     {
-        return new Stat(stat.Type, stat.Value - value, stat.Min, stat.Max, stat.precision);
+        return new Stat(stat.Type, stat.Value - value, stat.Min, stat.Max, stat._precision);
     }
 
     public static Stat operator -(float value, Stat stat)
     {
-        return new Stat(stat.Type, value - stat.Value, stat.Min, stat.Max, stat.precision);
+        return new Stat(stat.Type, value - stat.Value, stat.Min, stat.Max, stat._precision);
     }
 
     public static Stat operator *(Stat stat, float value)
     {
-        return new Stat(stat.Type, stat.Value * value, stat.Min, stat.Max, stat.precision);
+        return new Stat(stat.Type, stat.Value * value, stat.Min, stat.Max, stat._precision);
     }
 
     public static Stat operator *(float value, Stat stat)
@@ -117,12 +118,12 @@ public readonly partial struct Stat
 
     public static Stat operator /(Stat stat, float value)
     {
-        return new Stat(stat.Type, stat.Value / value, stat.Min, stat.Max, stat.precision);
+        return new Stat(stat.Type, stat.Value / value, stat.Min, stat.Max, stat._precision);
     }
 
     public static Stat operator /(float value, Stat stat)
     {
-        return new Stat(stat.Type, value / stat.Value, stat.Min, stat.Max, stat.precision);
+        return new Stat(stat.Type, value / stat.Value, stat.Min, stat.Max, stat._precision);
     }
 
     public override string ToString()

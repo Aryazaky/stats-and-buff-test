@@ -18,15 +18,15 @@ public readonly partial struct Stat
 
         public readonly struct Contexts
         {
-            public readonly object sender;
-            public readonly Query query;
-            public readonly Modifier modifier;
+            public readonly object Sender;
+            public readonly Query Query;
+            public readonly Modifier Modifier;
 
             public Contexts(object sender, Query query, Modifier modifier)
             {
-                this.sender = sender;
-                this.query = query;
-                this.modifier = modifier;
+                Sender = sender;
+                Query = query;
+                Modifier = modifier;
             }
         }
 
@@ -36,14 +36,14 @@ public readonly partial struct Stat
         public event Action<Modifier> OnInvoke;
         public event Action<Modifier> OnInvokeFail;
 
-        private readonly Operation operation;
-        private readonly ActivePrerequisite activePrerequisite;
+        private readonly Operation _operation;
+        private readonly ActivePrerequisite _activePrerequisite;
 
         public Modifier(Operation operation, int priority = 0, ActivePrerequisite activePrerequisite = null)
         {
             Priority = priority;
-            this.operation = operation;
-            this.activePrerequisite = activePrerequisite ?? (contexts => true);
+            _operation = operation;
+            _activePrerequisite = activePrerequisite ?? (_ => true);
         }
 
         public float LastInvokeTime { get; private set; }
@@ -58,10 +58,10 @@ public readonly partial struct Stat
         {
             if (!IsExpired)
             {
-                Contexts contexts = new Contexts(sender, query, this);
-                if (activePrerequisite(contexts))
+                var contexts = new Contexts(sender, query, this);
+                if (_activePrerequisite(contexts))
                 {
-                    operation(contexts);
+                    _operation(contexts);
                     InvokedCount++;
                     LastInvokeTime = Time.time;
                     OnInvoke?.Invoke(this);
@@ -82,11 +82,11 @@ public readonly partial struct Stat
 
     public class Mediator
     {
-        private readonly List<Modifier> modifiers = new();
+        private readonly List<Modifier> _modifiers = new();
 
         public void PerformQuery(object sender, Query query)
         {
-            foreach (var modifier in modifiers.ToArray())
+            foreach (var modifier in _modifiers.ToArray())
             {
                 modifier.Handle(sender, query);
             }
@@ -96,14 +96,14 @@ public readonly partial struct Stat
 
         public void AddModifier(Modifier modifier)
         {
-            modifiers.Add(modifier);
-            modifiers.Sort((x, y) => x.Priority.CompareTo(y.Priority));
-            modifier.OnDispose += mod => modifiers.Remove(mod);
+            _modifiers.Add(modifier);
+            _modifiers.Sort((x, y) => x.Priority.CompareTo(y.Priority));
+            modifier.OnDispose += mod => _modifiers.Remove(mod);
         }
 
         public void RemoveModifiers(Func<Modifier, bool> predicate)
         {
-            foreach (var modifier in modifiers.Where(predicate).ToArray())
+            foreach (var modifier in _modifiers.Where(predicate).ToArray())
             {
                 modifier.Dispose();
             }
@@ -113,15 +113,15 @@ public readonly partial struct Stat
 
 public class StatModifier : Stat.Modifier
 {
-    private Stat.StatType type;
+    private readonly Stat.StatType _type;
     public StatModifier(Stat.StatType type, Operation operation, int priority = 0, ActivePrerequisite activePrerequisite = null) : base(operation, priority, activePrerequisite)
     {
-        this.type = type;
+        _type = type;
     }
 
     public override void Handle(object sender, Stat.Query query)
     {
-        if (query.Stat.Type == type)
+        if (query.Stat.Type == _type)
         {
             base.Handle(sender, query);
         }

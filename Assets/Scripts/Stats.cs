@@ -6,120 +6,95 @@ using System.Linq;
 [Serializable]
 public class Stats
 {
-    private readonly Dictionary<Stat.StatType, Stat> baseStats;
-    private readonly Stat.Mediator mediator = new();
-    private readonly HashSet<Stat.StatType> currentlyAccessed = new();
+    private class StatPair
+    {
+        public Stat Base;
+        public Stat Processed;
 
-    public Stat.Mediator Mediator => mediator;
+        public StatPair(Stat baseStat, Stat? cache = null)
+        {
+            Base = baseStat;
+            Processed = cache ?? baseStat;
+        }
+    }
+
+    public class Dict
+    {
+        private readonly Dictionary<Stat.StatType, Stat> _stats;
+
+        public Dict(params Stat[] stats)
+        {
+            _stats = stats.ToDictionary(stat => stat.Type);
+        }
+
+        public Dict(IEnumerable<Stat> stats)
+        {
+            _stats = stats.ToDictionary(stat => stat.Type);
+        }
+    
+        public Stat this[Stat.StatType type]
+        {
+            get => _stats[type];
+            set => _stats[type] = value;
+        }
+        
+        public bool Contains(Stat.StatType type)
+        {
+            return _stats.ContainsKey(type);
+        }
+
+        public IEnumerable<Stat.StatType> Types => _stats.Keys;
+        public IEnumerable<Stat> Enumerable => _stats.Values;
+    }
+
+    private readonly Dict _stats;
+    private Dict _modified;
+
+    public Stat.Mediator Mediator { get; } = new();
 
     public Stats(params Stat[] stats)
     {
-        baseStats = stats.ToDictionary(stat => stat.Type);
+        _stats = new Dict(stats);
+        _modified = new Dict(stats);
+        // var zeroes = stats.Select(stat => stat.SetValue(0));
+        // _modified = new Dict(zeroes);
+    }
+    
+    public Stats(IEnumerable<Stat> stats)
+    {
+        _stats = new Dict(stats);
+        _modified = new Dict(stats);
+        // var zeroes = stats.Select(stat => stat.SetValue(0));
+        // _modified = new Dict(zeroes);
     }
 
     public Stat this[Stat.StatType type]
     {
-        get
-        {
-            if (currentlyAccessed.Contains(type))
-            {
-                throw new InvalidOperationException($"Circular access detected for stat: {type}. Check modifiers and prerequisites.");
-            }
-
-            if (TryGetBaseStat(type, out var stat))
-            {
-                currentlyAccessed.Add(type);
-                try
-                {
-                    var query = new Stat.Query(stat, this);
-                    mediator.PerformQuery(this, query);
-                    return query.Stat;
-                }
-                finally
-                {
-                    currentlyAccessed.Remove(type);
-                }
-            }
-
-            throw new Exception($"Stat of type {type} not found.");
-        }
-        set 
-        { 
-            if (Contains(type))
-            {
-                // TODO: Make some processing? Or a warning because a set accessor is destructive?
-                if (value.Type == type)
-                {
-                    baseStats[type] = value;
-                }
-                else throw new ArgumentException($"Type mismatch. Tried to assign a {type} with a {value}.");
-            }
-            else throw new Exception($"Unable to assign stat of type {type}. It was not exist before.");
-        }
+        get => _stats[type];
+        set => _stats[type] = value;
     }
 
-    public void ApplyChange(Stat.StatType type, float delta)
+    public void Update(params Stat.StatType[] types)
     {
-        if (TryGetBaseStat(type, out var stat))
+        if (!types.Any()) types = Types.ToArray();
+        foreach (var type in types)
         {
-            baseStats[type] = stat.UpdateValue(delta);
+            _modified[type] = PerformQuery(_stats[type]);
         }
-        else throw new Exception($"Stat of type {type} not found.");
     }
 
-    public bool TryGetBaseStat(Stat.StatType type, out Stat stat)
+    private Stat PerformQuery(Stat stat)
     {
-        return baseStats.TryGetValue(type, out stat);
+        var query = new Stat.Query(this, stat);
+        Mediator.PerformQuery(this, query);
+        return query.Stat;
     }
-
+        
     public bool Contains(Stat.StatType type)
     {
-        return baseStats.ContainsKey(type);
+        return _stats.Contains(type);
     }
 
-    public IEnumerable<Stat.StatType> Types => baseStats.Keys;
-}
-
-public class CapturedStats
-{
-    private readonly Dictionary<Stat.StatType, Stat> stats;
-
-    public CapturedStats(Stats stats)
-    {
-        if (stats == null) throw new ArgumentNullException(nameof(stats));
-
-        this.stats = new Dictionary<Stat.StatType, Stat>();
-        foreach (var type in stats.Types)
-        {
-            this.stats[type] = stats[type];
-        }
-    }
-
-    public Stat this[Stat.StatType type]
-    {
-        get
-        {
-            if (stats.TryGetValue(type, out var value))
-            {
-                return value;
-            }
-            else
-            {
-                throw new Exception($"Stat of type {type} not found.");
-            }
-        }
-        set
-        {
-            if (stats.ContainsKey(type))
-            {
-                if (value.Type == type)
-                {
-                    stats[type] = value;
-                }
-                else throw new ArgumentException($"Type mismatch. Tried to assign a {type} with a {value}.");
-            }
-        }
-    }
-
-    public IEnumerable<KeyValuePair<Stat.StatType, Stat>> Values() => stats;
+    public IEnumerable<Stat.StatType> Types => _stats.Types;
+    public IEnumerable<Stat> Enumerable => _stats.Enumerable;
 }
