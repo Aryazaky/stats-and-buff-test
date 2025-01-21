@@ -121,7 +121,7 @@ public class StatModifier : Stat.Modifier
 
     public override void Handle(object sender, Stat.Query query)
     {
-        if (query.Stat.Type == _type)
+        if (query.Types.Contains(_type))
         {
             base.Handle(sender, query);
         }
