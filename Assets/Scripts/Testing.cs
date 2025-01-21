@@ -11,7 +11,7 @@ public class Testing : MonoBehaviour
         _stats = new Stats(hp, mana);
 
         var modifier = new StatModifier(
-            Stat.StatType.Health, // contexts.Query.QueriedType will equal this value
+            Stat.StatType.Health,
             operation: HealthPlusInvokedCount,
             activePrerequisite: IsHealthBelowHalf
         );
@@ -20,21 +20,22 @@ public class Testing : MonoBehaviour
         expiryNotifier.TrackModifier(modifier);
 
         _stats.Mediator.AddModifier(modifier);
-        Debug.Log($"Health: {_stats[Stat.StatType.Health]}"); // HP: 10
+        Debug.Log($"0:Health: {_stats[Stat.StatType.Health]}");
         _stats.Update();
-        Debug.Log($"1Health: {_stats[Stat.StatType.Health]}"); // HP: 11
+        Debug.Log($"1:Health: {_stats[Stat.StatType.Health]}");
         _stats.Update();
-        Debug.Log($"2Health: {_stats[Stat.StatType.Health]}"); // HP: 12
-        Debug.Log($"2Health: {_stats[Stat.StatType.Health]}"); // HP: 12, 2 times invoke, time to get booted
+        Debug.Log($"2:Health: {_stats[Stat.StatType.Health]}");
         _stats.Update();
-        Debug.Log($"3Health: {_stats[Stat.StatType.Health]}"); // HP: 10 for temp, but stays 12 for the permanent
+        Debug.Log($"3:Health: {_stats[Stat.StatType.Health]}");
+        _stats.Update();
+        Debug.Log($"4:Health: {_stats[Stat.StatType.Health]}");
         return;
 
         bool IsHealthBelowHalf(Stat.Modifier.Contexts contexts)
         {
-            // Access the health stat using the stats indexer will result in stackoverflow error. Must use sender and query
-            float currentHealth = contexts.Query.Stats[Stat.StatType.Health].Value;
-            float maxHealth = contexts.Query.Stats[Stat.StatType.Health].Max ?? float.MaxValue;
+            var health = contexts.Query.Stats[Stat.StatType.Health];
+            float currentHealth = health.Value;
+            float maxHealth = health.Max ?? float.MaxValue;
             return currentHealth < (maxHealth / 2);
         }
 
@@ -44,17 +45,20 @@ public class Testing : MonoBehaviour
             var statsRef = contexts.Query.StatsRef;
             foreach (var type in contexts.Query.Types)
             {
-                // // How to: Temporary stat change, offset by 1
+                // How to: Temporary stat change, offset by 1
                 // stats[type].Value += 1;
-                //
-                // // How to: Temporary stat change, set to 1
+                
+                // How to: Temporary stat change, offset by how many times this effect has been invoked
+                stats[type].Value += 1 + contexts.Modifier.InvokedCount;
+                
+                // How to: Temporary stat change, set to 1
                 // stats[type].Value = 1;
                 
                 // How to: Permanently change the stats by replacing the stats in the ref
                 // statsRef[type] = statsRef[type].SetValue(1);
                 
                 // How to: Permanently change the stats, by offset
-                statsRef[type] += 1;
+                // statsRef[type] += 1;
             }
         }
     }

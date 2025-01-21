@@ -70,8 +70,8 @@ public class Stats
         }
         public Stat this[Stat.StatType type]
         {
-            get => _stats[type];
-            set => _stats[type] = value;
+            get => _stats._base[type];
+            set => _stats._base[type] = value;
         }
     }
 
@@ -92,11 +92,10 @@ public class Stats
         _modified = new Data<Stat>(stats);
     }
 
-    public Stat this[Stat.StatType type]
-    {
-        get => _modified[type];
-        set => _base[type] = value;
-    }
+    public Data<Stat> Base => _base;
+    public Data<Stat> Modified => _modified;
+    
+    public Stat this[Stat.StatType type] => _modified[type];
 
     public void Update(params Stat.StatType[] types)
     {
