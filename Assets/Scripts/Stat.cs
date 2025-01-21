@@ -1,13 +1,20 @@
 ﻿using System;
 
-public readonly partial struct Stat
+public interface IStat
 {
-    public class MutableStat
+    public Stat.StatType Type { get; }
+
+    public float Value { get; }
+}
+
+public readonly partial struct Stat : IStat
+{
+    public class MutableStat : IStat
     {
         public StatType Type { get; }
-        public float Value;
-        public float? Min;
-        public float? Max;
+        public float Value { get; set; }
+        public float? Min { get; set; }
+        public float? Max { get; set; }
         public float Precision { get; }
 
         public MutableStat(Stat stat)

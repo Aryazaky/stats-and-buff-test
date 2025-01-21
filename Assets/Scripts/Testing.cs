@@ -22,12 +22,12 @@ public class Testing : MonoBehaviour
         _stats.Mediator.AddModifier(modifier);
         Debug.Log($"Health: {_stats[Stat.StatType.Health]}"); // HP: 10
         _stats.Update();
-        Debug.Log($"Health: {_stats[Stat.StatType.Health]}"); // HP: 11
+        Debug.Log($"1Health: {_stats[Stat.StatType.Health]}"); // HP: 11
         _stats.Update();
-        Debug.Log($"Health: {_stats[Stat.StatType.Health]}"); // HP: 12
-        Debug.Log($"Health: {_stats[Stat.StatType.Health]}"); // HP: 12, 2 times invoke, time to get booted
+        Debug.Log($"2Health: {_stats[Stat.StatType.Health]}"); // HP: 12
+        Debug.Log($"2Health: {_stats[Stat.StatType.Health]}"); // HP: 12, 2 times invoke, time to get booted
         _stats.Update();
-        Debug.Log($"Health: {_stats[Stat.StatType.Health]}"); // HP: 10 for temp, but stays 12 for the permanent
+        Debug.Log($"3Health: {_stats[Stat.StatType.Health]}"); // HP: 10 for temp, but stays 12 for the permanent
         return;
 
         bool IsHealthBelowHalf(Stat.Modifier.Contexts contexts)
@@ -45,13 +45,13 @@ public class Testing : MonoBehaviour
             foreach (var type in contexts.Query.Types)
             {
                 // // How to: Temporary stat change, offset by 1
-                // stats[type] += 1;
+                // stats[type].Value += 1;
                 //
                 // // How to: Temporary stat change, set to 1
-                // stats[type] = stats[type].SetValue(1);
-                //
-                // // How to: Permanently change the stats by replacing the stats in the ref
-                // statsRef[type] = stats[type];
+                // stats[type].Value = 1;
+                
+                // How to: Permanently change the stats by replacing the stats in the ref
+                // statsRef[type] = statsRef[type].SetValue(1);
                 
                 // How to: Permanently change the stats, by offset
                 statsRef[type] += 1;

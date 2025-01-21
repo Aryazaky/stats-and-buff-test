@@ -6,21 +6,21 @@ using System.Linq;
 [Serializable]
 public class Stats
 {
-    public struct Data
+    public struct Data<T> where T : IStat
     {
-        private readonly Dictionary<Stat.StatType, Stat> _stats;
+        private readonly Dictionary<Stat.StatType, T> _stats;
 
-        public Data(params Stat[] stats)
+        public Data(params T[] stats)
         {
             _stats = stats.ToDictionary(stat => stat.Type);
         }
 
-        public Data(IEnumerable<Stat> stats)
+        public Data(IEnumerable<T> stats)
         {
             _stats = stats.ToDictionary(stat => stat.Type);
         }
     
-        public Stat this[Stat.StatType type]
+        public T this[Stat.StatType type]
         {
             get => _stats[type];
             set => _stats[type] = value;
@@ -32,32 +32,32 @@ public class Stats
         }
 
         public IEnumerable<Stat.StatType> Types => _stats.Keys;
-        public IEnumerable<Stat> Enumerable => _stats.Values;
+        public IEnumerable<T> Enumerable => _stats.Values;
     }
 
     public class DataWrapper
     {
-        private Data _data;
+        private Data<Stat.MutableStat> _stats;
 
-        public DataWrapper(Data data)
+        public DataWrapper(Data<Stat> data)
         {
-            _data = data;
+            _stats = new Data<Stat.MutableStat>(data.Enumerable.Select(stat => new Stat.MutableStat(stat)));
         }
 
         public DataWrapper(Stats stats)
         {
-            _data = stats._base;
+            _stats = new Data<Stat.MutableStat>(stats.Enumerable.Select(stat => new Stat.MutableStat(stat)));
         }
         
-        public Stat this[Stat.StatType type]
+        public Stat.MutableStat this[Stat.StatType type]
         {
-            get => _data[type];
-            set => _data[type] = value;
+            get => _stats[type];
+            set => _stats[type] = value;
         }
         
-        public static implicit operator Data(DataWrapper data)
+        public static implicit operator Data<Stat>(DataWrapper wrapper)
         {
-            return data._data;
+            return new Data<Stat>(wrapper._stats.Enumerable.Select(stat => (Stat)stat));
         }
     }
 
@@ -75,21 +75,21 @@ public class Stats
         }
     }
 
-    private Data _base;
-    private Data _modified;
+    private Data<Stat> _base;
+    private Data<Stat> _modified;
 
     public Stat.Mediator Mediator { get; } = new();
 
     public Stats(params Stat[] stats)
     {
-        _base = new Data(stats);
-        _modified = new Data(stats);
+        _base = new Data<Stat>(stats);
+        _modified = new Data<Stat>(stats);
     }
     
     public Stats(IEnumerable<Stat> stats)
     {
-        _base = new Data(stats);
-        _modified = new Data(stats);
+        _base = new Data<Stat>(stats);
+        _modified = new Data<Stat>(stats);
     }
 
     public Stat this[Stat.StatType type]
@@ -114,7 +114,7 @@ public class Stats
         return query.Stats[type];
     }
 
-    private Data PerformQuery()
+    private Data<Stat> PerformQuery()
     {
         var query = new Stat.Query(this);
         Mediator.PerformQuery(this, query);
