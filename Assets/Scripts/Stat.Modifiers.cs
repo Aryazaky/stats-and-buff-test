@@ -10,40 +10,75 @@ public readonly partial struct Stat
         public static class PriorityType
         {
             public const int Default = 0;
-            public const int Boost = 1; // Equipment stat boosts and such. They're additive
+            public const int Boost = 1; // Equipment stat boosts and such. They're additive BUT done before multiplication to simulate as if the base stats were always like that. 
             public const int Multiplicative = 2; // Buffs or debuffs
             public const int Offset = 3; // This is also additive, but done normally. For flat stat increase/decrease unaffected by buffs
             public const int Override = 4; // Evil, the ultimate No U. Could set the hard work we all did to calculate all that to 0 for all I know. 
+            public const int Clamp = 5;
+        }
+        
+        public readonly struct Metadata
+        {
+            private readonly Modifier _modifier;
+            public Metadata(Modifier modifier)
+            {
+                _modifier = modifier;
+            }
+
+            public float LastInvokeTime => _modifier.LastInvokeTime;
+            public int InvokedCount => _modifier.InvokedCount;
+            public int Priority => _modifier.Priority;
+            public bool IsExpired => _modifier.IsExpired;
         }
 
         public readonly struct Contexts
         {
-            public readonly object Sender;
-            public readonly Query Query;
-            public readonly Modifier Modifier;
+            public readonly QueryArgs QueryArgs;
+            public readonly Metadata ModifierMetadata;
 
-            public Contexts(object sender, Query query, Modifier modifier)
+            public Contexts(QueryArgs queryArgs, Modifier modifier)
             {
-                Sender = sender;
-                Query = query;
-                Modifier = modifier;
+                QueryArgs = queryArgs;
+                ModifierMetadata = new Metadata(modifier);
+            }
+        }
+
+        public interface IExpireTrigger
+        {
+            void Expire();
+        }
+
+        private class ExpireTrigger : IExpireTrigger
+        {
+            private readonly Modifier _modifier;
+
+            public ExpireTrigger(Modifier modifier)
+            {
+                _modifier = modifier;
+            }
+
+            public void Expire()
+            {
+                _modifier.IsExpired = true;
             }
         }
 
         public delegate void Operation(Contexts contexts);
-        public delegate bool ActivePrerequisite(Contexts contexts); // To allow enable or disable without expiring the modifier
-        public event Action<Modifier> OnDispose;
+        public delegate bool ActivePrerequisite(Contexts contexts, IExpireTrigger trigger);
         public event Action<Modifier> OnInvoke;
         public event Action<Modifier> OnInvokeFail;
+        public event Action<Modifier> OnDispose;
 
         private readonly Operation _operation;
         private readonly ActivePrerequisite _activePrerequisite;
+        private bool _isExpired;
+        private bool _operationOnExpireTriggered;
 
         public Modifier(Operation operation, int priority = 0, ActivePrerequisite activePrerequisite = null)
         {
             Priority = priority;
             _operation = operation;
-            _activePrerequisite = activePrerequisite ?? (_ => true);
+            _activePrerequisite = activePrerequisite ?? ((_,_) => true);
         }
 
         public float LastInvokeTime { get; private set; }
@@ -54,12 +89,12 @@ public readonly partial struct Stat
 
         public bool IsExpired { get; private set; }
 
-        public virtual void Handle(object sender, Query query)
+        public virtual void Handle(QueryArgs queryArgs)
         {
             if (!IsExpired)
             {
-                var contexts = new Contexts(sender, query, this);
-                if (_activePrerequisite(contexts))
+                var contexts = new Contexts(queryArgs, this);
+                if (_activePrerequisite(contexts, new ExpireTrigger(this)))
                 {
                     _operation(contexts);
                     InvokedCount++;
@@ -84,11 +119,11 @@ public readonly partial struct Stat
     {
         private readonly List<Modifier> _modifiers = new();
 
-        public void PerformQuery(object sender, Query query)
+        public void PerformQuery(QueryArgs queryArgs)
         {
             foreach (var modifier in _modifiers.ToArray())
             {
-                modifier.Handle(sender, query);
+                modifier.Handle(queryArgs);
             }
 
             RemoveModifiers(mod => mod.IsExpired);
@@ -113,17 +148,21 @@ public readonly partial struct Stat
 
 public class StatModifier : Stat.Modifier
 {
-    private readonly Stat.StatType _type;
+    private readonly Stat.StatType[] _types;
+    public StatModifier(IEnumerable<Stat.StatType> types, Operation operation, int priority = 0, ActivePrerequisite activePrerequisite = null) : base(operation, priority, activePrerequisite)
+    {
+        _types = types.ToArray();
+    }
     public StatModifier(Stat.StatType type, Operation operation, int priority = 0, ActivePrerequisite activePrerequisite = null) : base(operation, priority, activePrerequisite)
     {
-        _type = type;
+        _types = new[] { type };
     }
 
-    public override void Handle(object sender, Stat.Query query)
+    public override void Handle(QueryArgs queryArgs)
     {
-        if (query.Types.Contains(_type))
+        if (queryArgs.Query.Types.Intersect(_types).Any())
         {
-            base.Handle(sender, query);
+            base.Handle(queryArgs);
         }
     }
 }

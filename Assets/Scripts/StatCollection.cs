@@ -1,21 +1,20 @@
-using UnityEngine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 [Serializable]
-public class Stats
+public class StatCollection
 {
-    public struct Data<T> where T : IStat
+    public struct Stats<T> where T : Stat.IStat
     {
         private readonly Dictionary<Stat.StatType, T> _stats;
 
-        public Data(params T[] stats)
+        public Stats(params T[] stats)
         {
             _stats = stats.ToDictionary(stat => stat.Type);
         }
 
-        public Data(IEnumerable<T> stats)
+        public Stats(IEnumerable<T> stats)
         {
             _stats = stats.ToDictionary(stat => stat.Type);
         }
@@ -35,65 +34,65 @@ public class Stats
         public IEnumerable<T> Enumerable => _stats.Values;
     }
 
-    public class DataWrapper
+    public class ModifiableStats
     {
-        private Data<Stat.MutableStat> _stats;
+        private Stats<Stat.ModifiableStat> _stats;
 
-        public DataWrapper(Data<Stat> data)
+        public ModifiableStats(Stats<Stat> stats)
         {
-            _stats = new Data<Stat.MutableStat>(data.Enumerable.Select(stat => new Stat.MutableStat(stat)));
+            _stats = new Stats<Stat.ModifiableStat>(stats.Enumerable.Select(stat => new Stat.ModifiableStat(stat)));
         }
 
-        public DataWrapper(Stats stats)
+        public ModifiableStats(StatCollection statCollection)
         {
-            _stats = new Data<Stat.MutableStat>(stats.Enumerable.Select(stat => new Stat.MutableStat(stat)));
+            _stats = new Stats<Stat.ModifiableStat>(statCollection.Enumerable.Select(stat => new Stat.ModifiableStat(stat)));
         }
         
-        public Stat.MutableStat this[Stat.StatType type]
+        public Stat.ModifiableStat this[Stat.StatType type]
         {
             get => _stats[type];
             set => _stats[type] = value;
         }
         
-        public static implicit operator Data<Stat>(DataWrapper wrapper)
+        public static implicit operator Stats<Stat>(ModifiableStats wrapper)
         {
-            return new Data<Stat>(wrapper._stats.Enumerable.Select(stat => (Stat)stat));
+            return new Stats<Stat>(wrapper._stats.Enumerable.Select(stat => (Stat)stat));
         }
     }
 
-    public class IndexerOnly
+    public class BaseStatsIndexer
     {
-        private readonly Stats _stats;
-        public IndexerOnly(Stats stats)
+        private readonly StatCollection _statCollection;
+        public BaseStatsIndexer(StatCollection statCollection)
         {
-            _stats = stats;
+            _statCollection = statCollection;
         }
         public Stat this[Stat.StatType type]
         {
-            get => _stats._base[type];
-            set => _stats._base[type] = value;
+            get => _statCollection._base[type];
+            set => _statCollection._base[type] = value;
         }
     }
 
-    private Data<Stat> _base;
-    private Data<Stat> _modified;
+    private Stats<Stat> _base;
+    private Stats<Stat> _modified;
 
     public Stat.Mediator Mediator { get; } = new();
 
-    public Stats(params Stat[] stats)
+    public StatCollection(params Stat[] stats)
     {
-        _base = new Data<Stat>(stats);
-        _modified = new Data<Stat>(stats);
+        _base = new Stats<Stat>(stats);
+        _modified = new Stats<Stat>(stats);
     }
     
-    public Stats(IEnumerable<Stat> stats)
+    public StatCollection(IEnumerable<Stat> stats)
     {
-        _base = new Data<Stat>(stats);
-        _modified = new Data<Stat>(stats);
+        _base = new Stats<Stat>(stats);
+        _modified = new Stats<Stat>(stats);
     }
 
-    public Data<Stat> Base => _base;
-    public Data<Stat> Modified => _modified;
+    public Stats<Stat> Base => _base;
+    public Stats<Stat> Modified => _modified;
     
     public Stat this[Stat.StatType type] => _modified[type];
 
@@ -109,14 +108,14 @@ public class Stats
     private Stat PerformQuery(Stat.StatType type)
     {
         var query = new Stat.Query(this, type);
-        Mediator.PerformQuery(this, query);
+        Mediator.PerformQuery(new NoQueryArgs(this, query));
         return query.Stats[type];
     }
 
-    private Data<Stat> PerformQuery()
+    private Stats<Stat> PerformQuery()
     {
         var query = new Stat.Query(this);
-        Mediator.PerformQuery(this, query);
+        Mediator.PerformQuery(new NoQueryArgs(this, query));
         return query.Stats;
     }
         

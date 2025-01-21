@@ -1,15 +1,15 @@
 ﻿using System;
 
-public interface IStat
+public readonly partial struct Stat : Stat.IStat
 {
-    public Stat.StatType Type { get; }
+    public interface IStat
+    {
+        public Stat.StatType Type { get; }
 
-    public float Value { get; }
-}
-
-public readonly partial struct Stat : IStat
-{
-    public class MutableStat : IStat
+        public float Value { get; }
+    }
+    
+    public class ModifiableStat : IStat
     {
         public StatType Type { get; }
         public float Value { get; set; }
@@ -17,7 +17,7 @@ public readonly partial struct Stat : IStat
         public float? Max { get; set; }
         public float Precision { get; }
 
-        public MutableStat(Stat stat)
+        public ModifiableStat(Stat stat)
         {
             Value = stat.Value;
             Precision = stat._precision;
@@ -26,7 +26,7 @@ public readonly partial struct Stat : IStat
             Max = stat.Max;
         }
 
-        public static implicit operator Stat(MutableStat stat)
+        public static implicit operator Stat(ModifiableStat stat)
         {
             return new Stat(type: stat.Type, value: stat.Value, min: stat.Min, max: stat.Max);
         }
