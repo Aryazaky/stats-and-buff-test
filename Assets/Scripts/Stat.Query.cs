@@ -1,4 +1,7 @@
-﻿public readonly partial struct Stat
+﻿using System;
+using System.Linq;
+
+public readonly partial struct Stat
 {
     // A class with properties that can be viewed or freely be changed while it undergone a journey through multiple modifiers. 
     public class Query
@@ -12,7 +15,12 @@
             Types = types;
             Stats = new StatCollection.ModifiableStats(statCollection);
             StatsRef = new StatCollection.BaseStatsIndexer(statCollection);
-            Types = types;
+
+            if (types.Any(type => !statCollection.Contains(type)))
+            {
+                throw new ArgumentOutOfRangeException(nameof(types),
+                    $"{nameof(statCollection)} does not have all types requested.");
+            }
         }
     }
 }

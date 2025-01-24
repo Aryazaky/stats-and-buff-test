@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using UnityEngine;
 
 public class Testing : MonoBehaviour
@@ -33,10 +35,21 @@ public class Testing : MonoBehaviour
 
         bool IsHealthBelowHalf(Stat.Modifier.Contexts contexts, Stat.Modifier.IExpireTrigger trigger)
         {
-            var health = contexts.QueryArgs.Query.Stats[Stat.StatType.Health];
+            var health = contexts.QueryArgs.Query.Stats[Stat.StatType.Health]; // Unsafe as there might not be a health stat
             float currentHealth = health.Value;
             float maxHealth = health.Max ?? float.MaxValue;
             return currentHealth < (maxHealth / 2);
+        }
+
+        bool ExampleOncePerSecondActivationAsLongAsQueriedStatsAreMoreThanZeroElseEndInstantly(Stat.Modifier.Contexts contexts, Stat.Modifier.IExpireTrigger trigger)
+        {
+            var query = contexts.QueryArgs.Query;
+            var stats = query.Stats;
+            var hasAtLeastOneSecondPassed = contexts.ModifierMetadata.LastInvokeTime > 1;
+            var allQueriedStatsAreMoreThan0 = query.Types.All(type => stats[type].Value > 0); // query.Types is guaranteed to be types available in the stats. 
+            var result = allQueriedStatsAreMoreThan0 && hasAtLeastOneSecondPassed;
+            if (!result) trigger.Expire(); // Example how to kill the modifier after it's no longer useful. 
+            return result;
         }
 
         void ExampleOperations(Stat.Modifier.Contexts contexts)
@@ -60,13 +73,17 @@ public class Testing : MonoBehaviour
                 // How to: Permanently change the stats, by offset
                 // statsRef[type] += 1;
                 
-                // Trigger at certain events (Not recommended)
-                // Example: Ticking time bomb
-                if (contexts.ModifierMetadata.IsExpired)
-                {
-                    
-                }
+                // NOTE: changing StatsRef will change the base stats.
+                // Since the stats indexer accessed the processed stats,
+                // and processed stats aren't updated with the new base stats until Update() is called,
+                // the changes will only be visible after 1 more Update(). 
+                // This has little-to-no effect on real-time games. But it will affect turn based games. 
             }
         }
+    }
+
+    private void Update()
+    {
+        _statCollection.Update();
     }
 }

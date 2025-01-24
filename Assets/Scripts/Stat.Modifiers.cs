@@ -5,7 +5,7 @@ using UnityEngine;
 
 public readonly partial struct Stat
 {
-    public abstract class Modifier : IDisposable
+    public abstract class Modifier : IDisposable, Modifier.IModifier
     {
         public static class PriorityType
         {
@@ -17,7 +17,21 @@ public readonly partial struct Stat
             public const int Clamp = 5;
         }
         
-        public readonly struct Metadata
+        private interface IModifier
+        {
+            public float LastInvokeTime { get; }
+            public float CreatedTime { get; }
+            public int InvokedCount { get; }
+            public int Priority { get; }
+        }
+        
+        public interface IExpiryNotifier
+        {
+            void TrackModifier(Modifier modifier);
+            void CheckLimit();
+        }
+        
+        public readonly struct Metadata : IModifier
         {
             private readonly Modifier _modifier;
             public Metadata(Modifier modifier)
@@ -26,9 +40,9 @@ public readonly partial struct Stat
             }
 
             public float LastInvokeTime => _modifier.LastInvokeTime;
+            public float CreatedTime => _modifier.CreatedTime;
             public int InvokedCount => _modifier.InvokedCount;
             public int Priority => _modifier.Priority;
-            public bool IsExpired => _modifier.IsExpired;
         }
 
         public readonly struct Contexts
@@ -65,6 +79,7 @@ public readonly partial struct Stat
 
         public delegate void Operation(Contexts contexts);
         public delegate bool ActivePrerequisite(Contexts contexts, IExpireTrigger trigger);
+        public event Action<Modifier> OnTryInvoke;
         public event Action<Modifier> OnInvoke;
         public event Action<Modifier> OnInvokeFail;
         public event Action<Modifier> OnDispose;
@@ -79,9 +94,12 @@ public readonly partial struct Stat
             Priority = priority;
             _operation = operation;
             _activePrerequisite = activePrerequisite ?? ((_,_) => true);
+            CreatedTime = Time.time;
         }
 
         public float LastInvokeTime { get; private set; }
+        
+        public float CreatedTime { get; }
 
         public int InvokedCount { get; private set; }
 
@@ -93,6 +111,7 @@ public readonly partial struct Stat
         {
             if (!IsExpired)
             {
+                OnTryInvoke?.Invoke(this);
                 var contexts = new Contexts(queryArgs, this);
                 if (_activePrerequisite(contexts, new ExpireTrigger(this)))
                 {

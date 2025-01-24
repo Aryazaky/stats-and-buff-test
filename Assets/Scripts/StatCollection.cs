@@ -1,11 +1,12 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 [Serializable]
-public class StatCollection
+public class StatCollection : IEnumerable<Stat>
 {
-    public struct Stats<T> where T : Stat.IStat
+    public struct Stats<T> : IEnumerable<T> where T : Stat.IStat
     {
         private readonly Dictionary<Stat.StatType, T> _stats;
 
@@ -31,21 +32,29 @@ public class StatCollection
         }
 
         public IEnumerable<Stat.StatType> Types => _stats.Keys;
-        public IEnumerable<T> Enumerable => _stats.Values;
+        public IEnumerator<T> GetEnumerator()
+        {
+            return _stats.Values.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
     }
 
-    public class ModifiableStats
+    public class ModifiableStats : IEnumerable<Stat.ModifiableStat>
     {
         private Stats<Stat.ModifiableStat> _stats;
 
         public ModifiableStats(Stats<Stat> stats)
         {
-            _stats = new Stats<Stat.ModifiableStat>(stats.Enumerable.Select(stat => new Stat.ModifiableStat(stat)));
+            _stats = new Stats<Stat.ModifiableStat>(stats.Select(stat => new Stat.ModifiableStat(stat)));
         }
 
         public ModifiableStats(StatCollection statCollection)
         {
-            _stats = new Stats<Stat.ModifiableStat>(statCollection.Enumerable.Select(stat => new Stat.ModifiableStat(stat)));
+            _stats = new Stats<Stat.ModifiableStat>(statCollection.Select(stat => new Stat.ModifiableStat(stat)));
         }
         
         public Stat.ModifiableStat this[Stat.StatType type]
@@ -54,9 +63,26 @@ public class StatCollection
             set => _stats[type] = value;
         }
         
+        public IEnumerable<Stat.StatType> Types => _stats.Types;
+
+        public bool Contains(Stat.StatType type)
+        {
+            return _stats.Contains(type);
+        }
+        
         public static implicit operator Stats<Stat>(ModifiableStats wrapper)
         {
-            return new Stats<Stat>(wrapper._stats.Enumerable.Select(stat => (Stat)stat));
+            return new Stats<Stat>(wrapper._stats.Select(stat => (Stat)stat));
+        }
+
+        public IEnumerator<Stat.ModifiableStat> GetEnumerator()
+        {
+            return _stats.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 
@@ -125,5 +151,13 @@ public class StatCollection
     }
 
     public IEnumerable<Stat.StatType> Types => _base.Types;
-    public IEnumerable<Stat> Enumerable => _base.Enumerable;
+    public IEnumerator<Stat> GetEnumerator()
+    {
+        return _base.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
 }

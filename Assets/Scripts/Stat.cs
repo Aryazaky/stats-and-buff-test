@@ -2,36 +2,6 @@
 
 public readonly partial struct Stat : Stat.IStat
 {
-    public interface IStat
-    {
-        public Stat.StatType Type { get; }
-
-        public float Value { get; }
-    }
-    
-    public class ModifiableStat : IStat
-    {
-        public StatType Type { get; }
-        public float Value { get; set; }
-        public float? Min { get; set; }
-        public float? Max { get; set; }
-        public float Precision { get; }
-
-        public ModifiableStat(Stat stat)
-        {
-            Value = stat.Value;
-            Precision = stat._precision;
-            Type = stat.Type;
-            Min = stat.Min;
-            Max = stat.Max;
-        }
-
-        public static implicit operator Stat(ModifiableStat stat)
-        {
-            return new Stat(type: stat.Type, value: stat.Value, min: stat.Min, max: stat.Max);
-        }
-    }
-
     private readonly int _precision;
 
     public StatType Type { get; }
@@ -73,65 +43,58 @@ public readonly partial struct Stat : Stat.IStat
         return new Stat(Type, value, Min, Max, _precision);
     }
 
-    public static Stat operator +(Stat a, Stat b)
+    private Stat PerformOperation(Stat other, Func<float, float, float> operation)
     {
-        if (a.Type != b.Type)
-        {
-            throw new InvalidOperationException($"Cannot add Stats of different types: {a.Type} and {b.Type}");
-        }
+        if (Type != other.Type)
+            throw new InvalidOperationException($"Cannot operate on Stats of different types: {Type} and {other.Type}");
 
-        return new Stat(a.Type, a.Value + b.Value, a.Min, a.Max, a._precision);
+        return new Stat(Type, operation(Value, other.Value), Min, Max, _precision);
     }
 
-    public static Stat operator -(Stat a, Stat b)
+    private Stat PerformOperation(float value, Func<float, float, float> operation)
     {
-        if (a.Type != b.Type)
-        {
-            throw new InvalidOperationException($"Cannot subtract Stats of different types: {a.Type} and {b.Type}");
-        }
-
-        return new Stat(a.Type, a.Value - b.Value, a.Min, a.Max, a._precision);
+        return new Stat(Type, operation(Value, value), Min, Max, _precision);
     }
 
-    public static Stat operator +(Stat stat, float value)
+    public static Stat operator +(Stat a, Stat b) => a.PerformOperation(b, (x, y) => x + y);
+    public static Stat operator -(Stat a, Stat b) => a.PerformOperation(b, (x, y) => x - y);
+    public static Stat operator +(Stat stat, float value) => stat.PerformOperation(value, (x, y) => x + y);
+    public static Stat operator +(float value, Stat stat) => stat + value;
+    public static Stat operator -(Stat stat, float value) => stat.PerformOperation(value, (x, y) => x - y);
+    public static Stat operator -(float value, Stat stat) => new Stat(stat.Type, value - stat.Value, stat.Min, stat.Max, stat._precision);
+    public static Stat operator *(Stat stat, float value) => stat.PerformOperation(value, (x, y) => x * y);
+    public static Stat operator *(float value, Stat stat) => stat * value;
+    public static Stat operator /(Stat stat, float value) => stat.PerformOperation(value, (x, y) => x / y);
+    public static Stat operator /(float value, Stat stat) => new Stat(stat.Type, value / stat.Value, stat.Min, stat.Max, stat._precision);
+
+    private bool Compare(Stat other, Func<float, float, bool> comparison)
     {
-        return new Stat(stat.Type, stat.Value + value, stat.Min, stat.Max, stat._precision);
+        if (Type != other.Type)
+            throw new InvalidOperationException($"Cannot compare Stats of different types: {Type} and {other.Type}");
+        return comparison(Value, other.Value);
     }
 
-    public static Stat operator +(float value, Stat stat)
-    {
-        return stat + value;
-    }
+    public static bool operator >(Stat a, Stat b) => a.Compare(b, (x, y) => x > y);
+    public static bool operator <(Stat a, Stat b) => a.Compare(b, (x, y) => x < y);
+    public static bool operator >=(Stat a, Stat b) => !(a < b);
+    public static bool operator <=(Stat a, Stat b) => !(a > b);
 
-    public static Stat operator -(Stat stat, float value)
-    {
-        return new Stat(stat.Type, stat.Value - value, stat.Min, stat.Max, stat._precision);
-    }
-
-    public static Stat operator -(float value, Stat stat)
-    {
-        return new Stat(stat.Type, value - stat.Value, stat.Min, stat.Max, stat._precision);
-    }
-
-    public static Stat operator *(Stat stat, float value)
-    {
-        return new Stat(stat.Type, stat.Value * value, stat.Min, stat.Max, stat._precision);
-    }
-
-    public static Stat operator *(float value, Stat stat)
-    {
-        return stat * value;
-    }
-
-    public static Stat operator /(Stat stat, float value)
-    {
-        return new Stat(stat.Type, stat.Value / value, stat.Min, stat.Max, stat._precision);
-    }
-
-    public static Stat operator /(float value, Stat stat)
-    {
-        return new Stat(stat.Type, value / stat.Value, stat.Min, stat.Max, stat._precision);
-    }
+    public static bool operator >(Stat a, float b) => a.Value > b;
+    public static bool operator <(Stat a, float b) => a.Value < b;
+    public static bool operator >(float a, Stat b) => a > b.Value;
+    public static bool operator <(float a, Stat b) => a < b.Value;
+    public static bool operator >=(Stat a, float b) => !(a < b);
+    public static bool operator <=(Stat a, float b) => !(a > b);
+    public static bool operator >=(float a, Stat b) => !(a < b);
+    public static bool operator <=(float a, Stat b) => !(a > b);
+    public static bool operator >(Stat a, int b) => a.Value > b;
+    public static bool operator <(Stat a, int b) => a.Value < b;
+    public static bool operator >(int a, Stat b) => a > b.Value;
+    public static bool operator <(int a, Stat b) => a < b.Value;
+    public static bool operator >=(Stat a, int b) => !(a < b);
+    public static bool operator <=(Stat a, int b) => !(a > b);
+    public static bool operator >=(int a, Stat b) => !(a < b);
+    public static bool operator <=(int a, Stat b) => !(a > b);
 
     public override string ToString()
     {
