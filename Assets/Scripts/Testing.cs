@@ -4,58 +4,65 @@ using UnityEngine;
 
 public class Testing : MonoBehaviour
 {
-    private StatCollection _statCollection;
+    private Stats _stats;
 
     void Start()
     {
         var hp = new Stat(Stat.StatType.Health, value: 10, min: 0, max: 50);
         var mana = new Stat(Stat.StatType.Mana, 5, 0, 10);
-        _statCollection = new StatCollection(hp, mana);
+        _stats = new Stats(hp, mana); // This is a params. Can put any number of stats. Duplicates types get a last one survive treatment
 
         var modifier = new StatModifier(
             Stat.StatType.Health,
             operation: ExampleOperations,
-            activePrerequisite: IsHealthBelowHalf
+            activePrerequisite: ExampleIsHealthBelowHalf
         );
 
+        // You can expire them externally with ExpiryNotifier class like these, or use IExpireTrigger that gets passed on to activePrerequisite
         var expiryNotifier = new InvokeLimitExpiryNotifier(3);
         expiryNotifier.TrackModifier(modifier);
 
-        _statCollection.Mediator.AddModifier(modifier);
-        Debug.Log($"0:Health: {_statCollection[Stat.StatType.Health]}");
-        _statCollection.Update();
-        Debug.Log($"1:Health: {_statCollection[Stat.StatType.Health]}");
-        _statCollection.Update();
-        Debug.Log($"2:Health: {_statCollection[Stat.StatType.Health]}");
-        _statCollection.Update();
-        Debug.Log($"3:Health: {_statCollection[Stat.StatType.Health]}");
-        _statCollection.Update();
-        Debug.Log($"4:Health: {_statCollection[Stat.StatType.Health]}");
+        _stats.Mediator.AddModifier(modifier);
+        Debug.Log($"0:Health: {_stats[Stat.StatType.Health]}");
+        _stats.Update();
+        Debug.Log($"1:Health: {_stats[Stat.StatType.Health]}");
+        _stats.Update();
+        Debug.Log($"2:Health: {_stats[Stat.StatType.Health]}");
+        _stats.Update();
+        Debug.Log($"3:Health: {_stats[Stat.StatType.Health]}");
+        _stats.Update();
+        Debug.Log($"4:Health: {_stats[Stat.StatType.Health]}");
         return;
 
-        bool IsHealthBelowHalf(Stat.Modifier.Contexts contexts, Stat.Modifier.IExpireTrigger trigger)
+        bool ExampleIsHealthBelowHalf(Stat.Modifier.Contexts contexts, Stat.Modifier.IExpireTrigger trigger)
         {
-            var health = contexts.QueryArgs.Query.Stats[Stat.StatType.Health]; // Unsafe as there might not be a health stat
-            float currentHealth = health.Value;
-            float maxHealth = health.Max ?? float.MaxValue;
-            return currentHealth < (maxHealth / 2);
+            // var health = contexts.QueryArgs.Query.Stats[Stat.StatType.Health]; // Unsafe as there might not be a health stat
+            if (contexts.QueryArgs.Query.ModifiableStats.TryGetValue(Stat.StatType.Health, out var health))
+            {
+                float currentHealth = health.Value;
+                float maxHealth = health.Max ?? float.MaxValue;
+                return currentHealth < (maxHealth / 2);
+            }
+            else return false;
         }
 
         bool ExampleOncePerSecondActivationAsLongAsQueriedStatsAreMoreThanZeroElseEndInstantly(Stat.Modifier.Contexts contexts, Stat.Modifier.IExpireTrigger trigger)
         {
             var query = contexts.QueryArgs.Query;
-            var stats = query.Stats;
+            var stats = query.ModifiableStats;
             var hasAtLeastOneSecondPassed = contexts.ModifierMetadata.LastInvokeTime > 1;
             var allQueriedStatsAreMoreThan0 = query.Types.All(type => stats[type].Value > 0); // query.Types is guaranteed to be types available in the stats. 
             var result = allQueriedStatsAreMoreThan0 && hasAtLeastOneSecondPassed;
-            if (!result) trigger.Expire(); // Example how to kill the modifier after it's no longer useful. 
+            if (!result) trigger.Expire(); // Example how to kill this modifier after it's no longer useful. 
             return result;
         }
 
         void ExampleOperations(Stat.Modifier.Contexts contexts)
         {
-            var stats = contexts.QueryArgs.Query.Stats;
-            var statsRef = contexts.QueryArgs.Query.StatsRef;
+            var stats = contexts.QueryArgs.Query.ModifiableStats;
+            // Capturing outside variables like this are not recommended. Make sure you know what you're doing. Avoid calling Update() to avoid stackoverflow. 
+            // var statsRef = _stats; // To access the base stats, use Query.BaseStats instead. 
+            var statsRef = contexts.QueryArgs.Query.BaseStats;
             foreach (var type in contexts.QueryArgs.Query.Types)
             {
                 // How to: Temporary stat change, offset by 1
@@ -77,13 +84,16 @@ public class Testing : MonoBehaviour
                 // Since the stats indexer accessed the processed stats,
                 // and processed stats aren't updated with the new base stats until Update() is called,
                 // the changes will only be visible after 1 more Update(). 
-                // This has little-to-no effect on real-time games. But it will affect turn based games. 
+                // This has little-to-no effect on real-time games. But it will affect turn based games.
+                // For cases like these, there are multiple ways to do it. First is by using QueryArgs to pass in what the current events are,
+                // or using a global static instance that stores the current active events.
+                // But these will be need to be checked on each unity update. For a true event-based triggers, I don't know how. 
             }
         }
     }
 
     private void Update()
     {
-        _statCollection.Update();
+        _stats.Update();
     }
 }

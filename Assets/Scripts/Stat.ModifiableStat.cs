@@ -2,6 +2,9 @@ using System;
 
 public readonly partial struct Stat
 {
+    /// <summary>
+    /// A Stat but with mutable properties, except for Type and Precision. Can be converted back to an immutable Stat. 
+    /// </summary>
     public class ModifiableStat : IStat
     {
         public StatType Type { get; }
@@ -10,6 +13,9 @@ public readonly partial struct Stat
         public float? Max { get; set; }
         public float Precision { get; }
 
+        /// <summary>
+        /// Converts a Stat into a ModifiableStat class. 
+        /// </summary>
         public ModifiableStat(Stat stat)
         {
             Value = stat.Value;
