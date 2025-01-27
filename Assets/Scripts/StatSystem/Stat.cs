@@ -7,8 +7,6 @@ namespace StatSystem
     /// </summary>
     public readonly partial struct Stat : Stat.IStat
     {
-        private readonly int _precision;
-
         public StatType Type { get; }
 
         public float Value { get; }
@@ -16,6 +14,7 @@ namespace StatSystem
         public float? Min { get; }
 
         public float? Max { get; }
+        public int Precision { get; }
 
         /// <summary>
         /// Initializes a new instance of <see cref="Stat"/>.
@@ -38,7 +37,7 @@ namespace StatSystem
                 throw new ArgumentException("Decimal places cannot be negative.", nameof(precision));
 
             Type = type;
-            _precision = precision;
+            Precision = precision;
 
             if (max.HasValue && min.HasValue && max.Value < min.Value)
             {
@@ -50,21 +49,21 @@ namespace StatSystem
             Value = 0;
             value = Max.HasValue ? MathF.Min(Max.Value, value) : value;
             value = Min.HasValue ? MathF.Max(Min.Value, value) : value;
-            Value = MathF.Round(value, _precision);
+            Value = MathF.Round(value, Precision);
         }
     
         /// <param name="delta">The value to add to existing value</param>
         /// <returns>A new Stat instance with the value adjusted by a given delta.</returns>
         public Stat UpdateValue(float delta)
         {
-            return new Stat(Type, Value + delta, Min, Max, _precision);
+            return new Stat(Type, Value + delta, Min, Max, Precision);
         }
 
         /// <param name="value">The value to replace the existing value</param>
         /// <returns>A new Stat instance with the replaced value.</returns>
         public Stat SetValue(float value)
         {
-            return new Stat(Type, value, Min, Max, _precision);
+            return new Stat(Type, value, Min, Max, Precision);
         }
 
         private Stat PerformOperation(Stat other, Func<float, float, float> operation)
@@ -72,12 +71,12 @@ namespace StatSystem
             if (Type != other.Type)
                 throw new InvalidOperationException($"Cannot operate on Stats of different types: {Type} and {other.Type}");
 
-            return new Stat(Type, operation(Value, other.Value), Min, Max, _precision);
+            return new Stat(Type, operation(Value, other.Value), Min, Max, Precision);
         }
 
         private Stat PerformOperation(float value, Func<float, float, float> operation)
         {
-            return new Stat(Type, operation(Value, value), Min, Max, _precision);
+            return new Stat(Type, operation(Value, value), Min, Max, Precision);
         }
 
         public static Stat operator +(Stat a, Stat b) => a.PerformOperation(b, (x, y) => x + y);
@@ -85,11 +84,11 @@ namespace StatSystem
         public static Stat operator +(Stat stat, float value) => stat.PerformOperation(value, (x, y) => x + y);
         public static Stat operator +(float value, Stat stat) => stat + value;
         public static Stat operator -(Stat stat, float value) => stat.PerformOperation(value, (x, y) => x - y);
-        public static Stat operator -(float value, Stat stat) => new Stat(stat.Type, value - stat.Value, stat.Min, stat.Max, stat._precision);
+        public static Stat operator -(float value, Stat stat) => new Stat(stat.Type, value - stat.Value, stat.Min, stat.Max, stat.Precision);
         public static Stat operator *(Stat stat, float value) => stat.PerformOperation(value, (x, y) => x * y);
         public static Stat operator *(float value, Stat stat) => stat * value;
         public static Stat operator /(Stat stat, float value) => stat.PerformOperation(value, (x, y) => x / y);
-        public static Stat operator /(float value, Stat stat) => new Stat(stat.Type, value / stat.Value, stat.Min, stat.Max, stat._precision);
+        public static Stat operator /(float value, Stat stat) => new Stat(stat.Type, value / stat.Value, stat.Min, stat.Max, stat.Precision);
 
         private bool Compare(Stat other, Func<float, float, bool> comparison)
         {

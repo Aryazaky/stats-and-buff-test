@@ -4,15 +4,15 @@ namespace StatSystem
     {
         public class StatsIndexer
         {
-            private readonly Stats _stats;
-            public StatsIndexer(Stats stats)
+            private readonly IStatCollection _stats;
+            public StatsIndexer(IStatCollection stats)
             {
                 _stats = stats;
             }
-            public Stat this[Stat.StatType type]
+            public Stat.IStat this[Stat.StatType type]
             {
-                get => _stats._base[type];
-                set => _stats._base[type] = value;
+                get => _stats[type];
+                set => _stats[type] = value;
             }
         }
     }

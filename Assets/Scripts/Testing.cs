@@ -8,6 +8,8 @@ using UnityEngine;
 public class Testing : MonoBehaviour
 {
     private Stats _stats;
+    private Stats.StatCollection _statCollection;
+    private Stat.Mediator _mediator = new();
     private WorldContexts _worldContexts = new WorldContexts(); // Just imagine this is getting the world contexts from somewhere else
 
     void Start()
@@ -15,6 +17,8 @@ public class Testing : MonoBehaviour
         var hp = new Stat(Stat.StatType.Health, value: 10, min: 0, max: 50);
         var mana = new Stat(Stat.StatType.Mana, 5, 0, 10);
         var strength = new Stat(Stat.StatType.Strength, 10); // Uncapped stats is also possible!
+        _statCollection = new Stats.StatCollection(hp, mana, strength);
+        
         _stats = new Stats(hp, mana); // This is a params. Can put any number of stats. Duplicates types get a last one survive treatment. Keep in mind, once a stats object is created, no new stat types can be added or removed. 
         
         var modifier = new StatModifier( // We're using a StatModifier class, but you can create your own!
@@ -30,6 +34,11 @@ public class Testing : MonoBehaviour
         // You can expire them externally with ExpiryNotifier class like these, or use IExpireTrigger that gets passed on to activePrerequisite
         var expiryNotifier = new InvokeLimitExpiryNotifier(3); // You can create a custom class. For example, to auto expire after 3 turns, or after 5 seconds, etc. 
         expiryNotifier.TrackModifier(modifier);
+        
+        _mediator.AddModifier(modifier);
+        var query = new Stat.Query(_statCollection, _worldContexts);
+        _mediator.PerformQuery(query);
+        _statCollection[Stat.StatType.Health] = query.Stats[Stat.StatType.Health];
 
         _stats.Mediator.AddModifier(modifier);
         Debug.Log($"0:Health: {_stats[Stat.StatType.Health]}");
@@ -48,7 +57,7 @@ public class Testing : MonoBehaviour
         bool ExampleIsHealthBelowHalf(Stat.Modifier.Contexts contexts, Stat.Modifier.IExpireTrigger trigger)
         {
             // var health = contexts.QueryArgs.Query.Stats[Stat.StatType.Health]; // Unsafe as there might not be a health stat
-            if (contexts.Query.ModifiableStats.TryGetValue(Stat.StatType.Health, out var health))
+            if (contexts.Query.Stats.TryGetStat(Stat.StatType.Health, out Stat.MutableStat health))
             {
                 float currentHealth = health.Value;
                 float maxHealth = health.Max ?? float.MaxValue;
@@ -65,7 +74,7 @@ public class Testing : MonoBehaviour
         bool ExampleOncePerSecondActivationAsLongAsQueriedStatsAreMoreThanZeroElseEndInstantly(Stat.Modifier.Contexts contexts, Stat.Modifier.IExpireTrigger trigger)
         {
             var query = contexts.Query;
-            var stats = query.ModifiableStats;
+            var stats = query.Stats;
             var hasAtLeastOneSecondPassed = contexts.ModifierMetadata.LastInvokeTime > 1;
             var allQueriedStatsAreMoreThan0 = query.Types.All(type => stats[type].Value > 0); // query.Types is guaranteed to be types available in the stats. 
             var result = allQueriedStatsAreMoreThan0 && hasAtLeastOneSecondPassed;
@@ -75,7 +84,7 @@ public class Testing : MonoBehaviour
 
         void ExampleOperations(Stat.Modifier.Contexts contexts)
         {
-            var stats = contexts.Query.ModifiableStats;
+            var stats = contexts.Query.Stats;
             // Capturing outside variables like this are not recommended. Make sure you know what you're doing. Avoid calling Update() to avoid stackoverflow. 
             // var statsRef = _stats; // To access the base stats, use Query.BaseStats instead. 
             var statsRef = contexts.Query.BaseStats;
@@ -114,5 +123,10 @@ public class Testing : MonoBehaviour
     private void Update()
     {
         _stats.Update(_worldContexts);
+
+        // if (Input.GetKeyUp(KeyCode.Q))
+        // {
+        //     _stats.Base[Stat.StatType.Health] -= 5;
+        // }
     }
 }

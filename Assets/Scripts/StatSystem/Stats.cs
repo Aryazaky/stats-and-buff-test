@@ -6,29 +6,33 @@ using System.Linq;
 namespace StatSystem
 {
     [Serializable]
-    public partial class Stats : IEnumerable<Stat>
+    public partial class Stats : Stats.IStatCollection<Stat>, Stats.IStatCollection
     {
-        private StatDictionary<Stat> _base;
-        private StatDictionary<Stat> _modified;
+        private StatCollectionStruct<Stat> _base;
+        private StatCollectionStruct<Stat> _modified;
 
         public Stat.Mediator Mediator { get; } = new();
 
         public Stats(params Stat[] stats)
         {
-            _base = new StatDictionary<Stat>(stats);
-            _modified = new StatDictionary<Stat>(stats);
+            _base = new StatCollectionStruct<Stat>(stats);
+            _modified = new StatCollectionStruct<Stat>(stats);
         }
     
         public Stats(IEnumerable<Stat> stats)
         {
-            _base = new StatDictionary<Stat>(stats);
-            _modified = new StatDictionary<Stat>(stats);
+            _base = new StatCollectionStruct<Stat>(stats);
+            _modified = new StatCollectionStruct<Stat>(stats);
         }
 
-        public StatDictionary<Stat> Base => _base;
-        public StatDictionary<Stat> Modified => _modified;
-    
-        public Stat this[Stat.StatType type] => _modified[type];
+        public StatCollectionStruct<Stat> Base => _base;
+        public StatCollectionStruct<Stat> Modified => _modified;
+
+        public Stat this[Stat.StatType type]
+        {
+            get => _modified[type];
+            set => _base[type] = value;
+        }
 
         public void Update(WorldContexts worldContexts, params Stat.StatType[] types)
         {
@@ -43,25 +47,48 @@ namespace StatSystem
         {
             var query = new Stat.Query(this, worldContexts, type);
             Mediator.PerformQuery(query);
-            return query.ModifiableStats[type];
+            return query.Stats[type];
         }
 
-        private StatDictionary<Stat> PerformQuery(WorldContexts worldContexts)
+        private StatCollectionStruct<Stat> PerformQuery(WorldContexts worldContexts)
         {
             var query = new Stat.Query(this, worldContexts);
             Mediator.PerformQuery(query);
-            return query.ModifiableStats;
+            return query.Stats;
         }
         
         public bool Contains(Stat.StatType type)
         {
-            return _base.ContainsKey(type);
+            return _base.Contains(type);
         }
 
-        public IEnumerable<Stat.StatType> Types => _base.Keys;
+        public bool TryGetStat(Stat.StatType type, out Stat.IStat stat)
+        {
+            return _base.TryGetStat(type, out stat);
+        }
+
+        public bool TryGetStat(Stat.StatType type, out Stat stat)
+        {
+            return _base.TryGetStat(type, out stat);
+        }
+
+        Stat.IStat IReadOnlyStatCollection.this[Stat.StatType type] => ((IReadOnlyStatCollection)_base)[type];
+
+        Stat.IStat IStatCollection.this[Stat.StatType type]
+        {
+            get => ((IStatCollection)_base)[type];
+            set => ((IStatCollection)_base)[type] = value;
+        }
+
+        public IEnumerable<Stat.StatType> Types => _base.Types;
+        IEnumerator<Stat.IStat> IEnumerable<Stat.IStat>.GetEnumerator()
+        {
+            return _base.OfType<Stat.IStat>().GetEnumerator();
+        }
+
         public IEnumerator<Stat> GetEnumerator()
         {
-            return _base.Values.GetEnumerator();
+            return _base.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()

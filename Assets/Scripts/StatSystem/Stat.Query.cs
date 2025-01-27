@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace StatSystem
@@ -8,16 +9,16 @@ namespace StatSystem
         // A class with properties that can be viewed or freely be changed while it undergone a journey through multiple modifiers. 
         public class Query
         {
-            public Stats.ModifiableStatDictionary ModifiableStats { get; }
+            public Stats.StatCollection Stats { get; }
             public Stats.StatsIndexer BaseStats { get; }
             public StatType[] Types { get; }
             public WorldContexts WorldContexts { get; }
 
-            public Query(Stats stats, WorldContexts worldContexts, params StatType[] types)
+            public Query(Stats.IStatCollection stats, WorldContexts worldContexts, params StatType[] types)
             {
                 WorldContexts = worldContexts;
                 Types = types;
-                ModifiableStats = new Stats.ModifiableStatDictionary(stats);
+                Stats = new Stats.StatCollection(stats);
                 BaseStats = new Stats.StatsIndexer(stats);
 
                 if (types.Any(type => !stats.Contains(type)))
