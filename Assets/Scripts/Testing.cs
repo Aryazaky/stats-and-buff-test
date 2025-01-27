@@ -1,5 +1,8 @@
 using System;
 using System.Linq;
+using StatSystem;
+using StatSystem.Concrete_Classes.Expiry_Notifiers;
+using StatSystem.Concrete_Classes.Modifiers;
 using UnityEngine;
 
 public class Testing : MonoBehaviour
@@ -32,6 +35,8 @@ public class Testing : MonoBehaviour
         Debug.Log($"3:Health: {_stats[Stat.StatType.Health]}");
         _stats.Update();
         Debug.Log($"4:Health: {_stats[Stat.StatType.Health]}");
+        _stats.Update();
+        Debug.Log($"5:Health: {_stats[Stat.StatType.Health]}");
         return;
 
         bool ExampleIsHealthBelowHalf(Stat.Modifier.Contexts contexts, Stat.Modifier.IExpireTrigger trigger)
