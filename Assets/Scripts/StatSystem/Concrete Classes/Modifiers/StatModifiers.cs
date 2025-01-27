@@ -15,11 +15,11 @@ namespace StatSystem.Concrete_Classes.Modifiers
             _types = new[] { type };
         }
 
-        public override void Handle(QueryArgs queryArgs)
+        public override void Handle(Stat.Query query)
         {
-            if (queryArgs.Query.Types.Intersect(_types).Any())
+            if (query.Types.Intersect(_types).Any())
             {
-                base.Handle(queryArgs);
+                base.Handle(query);
             }
         }
     }

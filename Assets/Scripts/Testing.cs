@@ -8,6 +8,7 @@ using UnityEngine;
 public class Testing : MonoBehaviour
 {
     private Stats _stats;
+    private WorldContexts worldContexts = new WorldContexts(); // Just imagine this is getting the world contexts from somewhere else
 
     void Start()
     {
@@ -20,6 +21,9 @@ public class Testing : MonoBehaviour
             operation: ExampleOperations,
             activePrerequisite: ExampleIsHealthBelowHalf
         );
+        
+        // Example adding world context
+        worldContexts.Add(new ExampleIsRaining());
 
         // You can expire them externally with ExpiryNotifier class like these, or use IExpireTrigger that gets passed on to activePrerequisite
         var expiryNotifier = new InvokeLimitExpiryNotifier(3);
@@ -27,22 +31,22 @@ public class Testing : MonoBehaviour
 
         _stats.Mediator.AddModifier(modifier);
         Debug.Log($"0:Health: {_stats[Stat.StatType.Health]}");
-        _stats.Update();
+        _stats.Update(worldContexts);
         Debug.Log($"1:Health: {_stats[Stat.StatType.Health]}");
-        _stats.Update();
+        _stats.Update(worldContexts);
         Debug.Log($"2:Health: {_stats[Stat.StatType.Health]}");
-        _stats.Update();
+        _stats.Update(worldContexts);
         Debug.Log($"3:Health: {_stats[Stat.StatType.Health]}");
-        _stats.Update();
+        _stats.Update(worldContexts);
         Debug.Log($"4:Health: {_stats[Stat.StatType.Health]}");
-        _stats.Update();
+        _stats.Update(worldContexts);
         Debug.Log($"5:Health: {_stats[Stat.StatType.Health]}");
         return;
 
         bool ExampleIsHealthBelowHalf(Stat.Modifier.Contexts contexts, Stat.Modifier.IExpireTrigger trigger)
         {
             // var health = contexts.QueryArgs.Query.Stats[Stat.StatType.Health]; // Unsafe as there might not be a health stat
-            if (contexts.QueryArgs.Query.ModifiableStats.TryGetValue(Stat.StatType.Health, out var health))
+            if (contexts.Query.ModifiableStats.TryGetValue(Stat.StatType.Health, out var health))
             {
                 float currentHealth = health.Value;
                 float maxHealth = health.Max ?? float.MaxValue;
@@ -51,9 +55,14 @@ public class Testing : MonoBehaviour
             else return false;
         }
 
+        bool ExampleUsingContexts(Stat.Modifier.Contexts contexts, Stat.Modifier.IExpireTrigger trigger)
+        {
+            return contexts.Query.WorldContexts.Contains<ExampleIsRaining>();
+        }
+
         bool ExampleOncePerSecondActivationAsLongAsQueriedStatsAreMoreThanZeroElseEndInstantly(Stat.Modifier.Contexts contexts, Stat.Modifier.IExpireTrigger trigger)
         {
-            var query = contexts.QueryArgs.Query;
+            var query = contexts.Query;
             var stats = query.ModifiableStats;
             var hasAtLeastOneSecondPassed = contexts.ModifierMetadata.LastInvokeTime > 1;
             var allQueriedStatsAreMoreThan0 = query.Types.All(type => stats[type].Value > 0); // query.Types is guaranteed to be types available in the stats. 
@@ -64,11 +73,11 @@ public class Testing : MonoBehaviour
 
         void ExampleOperations(Stat.Modifier.Contexts contexts)
         {
-            var stats = contexts.QueryArgs.Query.ModifiableStats;
+            var stats = contexts.Query.ModifiableStats;
             // Capturing outside variables like this are not recommended. Make sure you know what you're doing. Avoid calling Update() to avoid stackoverflow. 
             // var statsRef = _stats; // To access the base stats, use Query.BaseStats instead. 
-            var statsRef = contexts.QueryArgs.Query.BaseStats;
-            foreach (var type in contexts.QueryArgs.Query.Types)
+            var statsRef = contexts.Query.BaseStats;
+            foreach (var type in contexts.Query.Types)
             {
                 // How to: Temporary stat change, offset by 1
                 // stats[type].Value += 1;
@@ -99,6 +108,6 @@ public class Testing : MonoBehaviour
 
     private void Update()
     {
-        _stats.Update();
+        _stats.Update(worldContexts);
     }
 }

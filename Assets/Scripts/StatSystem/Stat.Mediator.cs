@@ -10,11 +10,11 @@ namespace StatSystem
         {
             private readonly List<Modifier> _modifiers = new();
 
-            public void PerformQuery(QueryArgs queryArgs)
+            public void PerformQuery(Query query)
             {
                 foreach (var modifier in _modifiers.ToArray())
                 {
-                    modifier.Handle(queryArgs);
+                    modifier.Handle(query);
                 }
 
                 RemoveModifiers(mod => mod.IsExpired);

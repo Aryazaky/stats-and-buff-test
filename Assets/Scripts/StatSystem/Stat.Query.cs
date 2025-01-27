@@ -11,9 +11,11 @@ namespace StatSystem
             public Stats.ModifiableStatDictionary ModifiableStats { get; }
             public Stats.StatsIndexer BaseStats { get; }
             public StatType[] Types { get; }
+            public WorldContexts WorldContexts { get; }
 
-            public Query(Stats stats, params StatType[] types)
+            public Query(Stats stats, WorldContexts worldContexts, params StatType[] types)
             {
+                WorldContexts = worldContexts;
                 Types = types;
                 ModifiableStats = new Stats.ModifiableStatDictionary(stats);
                 BaseStats = new Stats.StatsIndexer(stats);

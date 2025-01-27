@@ -37,12 +37,12 @@ namespace StatSystem
 
             public bool IsExpired { get; private set; }
 
-            public virtual void Handle(QueryArgs queryArgs)
+            public virtual void Handle(Query query)
             {
                 if (!IsExpired)
                 {
                     OnTryInvoke?.Invoke(this);
-                    var contexts = new Contexts(queryArgs, this);
+                    var contexts = new Contexts(query, this);
                     if (_activePrerequisite(contexts, new ExpireTrigger(this)))
                     {
                         _operation(contexts);

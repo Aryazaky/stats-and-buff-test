@@ -6,12 +6,12 @@ namespace StatSystem
         {
             public readonly struct Contexts
             {
-                public readonly QueryArgs QueryArgs;
+                public readonly Query Query;
                 public readonly Metadata ModifierMetadata;
 
-                public Contexts(QueryArgs queryArgs, Modifier modifier)
+                public Contexts(Query query, Modifier modifier)
                 {
-                    QueryArgs = queryArgs;
+                    Query = query;
                     ModifierMetadata = new Metadata(modifier);
                 }
             }
