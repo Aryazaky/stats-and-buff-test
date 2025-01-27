@@ -5,10 +5,12 @@
         public enum StatType
         {
             Health,
-            Attack,
+            Strength,
             Defense,
             Resistance,
             Mana,
+            ManaRegen,
+            HealthRegen,
             Energy,
             MovementSpeed,
             AttackSpeed
