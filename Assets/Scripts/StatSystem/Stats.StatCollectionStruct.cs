@@ -20,19 +20,10 @@ namespace StatSystem
                 get => _stats[type];
                 set => _stats[type] = value;
             }
-        
-            public bool Contains(Stat.StatType type) => _stats.ContainsKey(type);
-            public bool TryGetStat(Stat.StatType type, out Stat.IStat stat)
-            {
-                if (_stats.TryGetValue(type, out var s))
-                {
-                    stat = s;
-                    return true;
-                }
 
-                stat = default;
-                return false;
-            }
+            public IEnumerable<Stat.IStat> Values => _stats.Values.Cast<Stat.IStat>();
+
+            public bool Contains(Stat.StatType type) => _stats.ContainsKey(type);
 
             public bool TryGetStat(Stat.StatType type, out T stat) => _stats.TryGetValue(type, out stat);
 
@@ -54,7 +45,6 @@ namespace StatSystem
 
             public IEnumerable<Stat.StatType> Types => _stats.Keys;
 
-            IEnumerator<Stat.IStat> IEnumerable<Stat.IStat>.GetEnumerator() => _stats.Values.OfType<Stat.IStat>().GetEnumerator();
             public IEnumerator<T> GetEnumerator() => _stats.Values.GetEnumerator();
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }

@@ -56,21 +56,15 @@ namespace StatSystem
             Mediator.PerformQuery(query);
             return query.Stats;
         }
-        
+
+        public IEnumerable<Stat.IStat> Values => _base.Values;
+
         public bool Contains(Stat.StatType type)
         {
             return _base.Contains(type);
         }
 
-        public bool TryGetStat(Stat.StatType type, out Stat.IStat stat)
-        {
-            return _base.TryGetStat(type, out stat);
-        }
-
-        public bool TryGetStat(Stat.StatType type, out Stat stat)
-        {
-            return _base.TryGetStat(type, out stat);
-        }
+        public bool TryGetStat(Stat.StatType type, out Stat stat) => _base.TryGetStat(type, out stat);
 
         Stat.IStat IReadOnlyStatCollection.this[Stat.StatType type] => ((IReadOnlyStatCollection)_base)[type];
 
@@ -81,19 +75,9 @@ namespace StatSystem
         }
 
         public IEnumerable<Stat.StatType> Types => _base.Types;
-        IEnumerator<Stat.IStat> IEnumerable<Stat.IStat>.GetEnumerator()
-        {
-            return _base.OfType<Stat.IStat>().GetEnumerator();
-        }
 
-        public IEnumerator<Stat> GetEnumerator()
-        {
-            return _base.GetEnumerator();
-        }
+        public IEnumerator<Stat> GetEnumerator() => _base.GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }
