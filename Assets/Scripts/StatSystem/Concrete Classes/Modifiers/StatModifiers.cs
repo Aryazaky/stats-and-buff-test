@@ -15,7 +15,7 @@ namespace StatSystem.Concrete_Classes.Modifiers
             _types = new[] { type };
         }
 
-        public override void Handle(Stat.Query query)
+        public override void Handle(StatQuery query)
         {
             if (query.Types.Intersect(_types).Any())
             {

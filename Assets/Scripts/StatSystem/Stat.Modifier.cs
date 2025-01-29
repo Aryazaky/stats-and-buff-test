@@ -37,7 +37,7 @@ namespace StatSystem
 
             public bool IsExpired { get; private set; }
 
-            public virtual void Handle(Query query)
+            public virtual void Handle(StatQuery query)
             {
                 if (!IsExpired)
                 {

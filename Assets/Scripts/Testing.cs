@@ -8,8 +8,8 @@ using UnityEngine;
 public class Testing : MonoBehaviour
 {
     private Stats _stats;
-    private Stats.StatCollection _statCollection;
-    private Stat.Mediator _mediator = new();
+    private StatCollection _statCollection;
+    private Mediator _mediator = new();
     private WorldContexts _worldContexts = new WorldContexts(); // Just imagine this is getting the world contexts from somewhere else
 
     void Start()
@@ -17,7 +17,7 @@ public class Testing : MonoBehaviour
         var hp = new Stat(Stat.StatType.Health, value: 10, min: 0, max: 50);
         var mana = new Stat(Stat.StatType.Mana, 5, 0, 10);
         var strength = new Stat(Stat.StatType.Strength, 10); // Uncapped stats is also possible!
-        _statCollection = new Stats.StatCollection(hp, mana, strength);
+        _statCollection = new StatCollection(hp, mana, strength);
         
         _stats = new Stats(hp, mana); // This is a params. Can put any number of stats. Duplicates types get a last one survive treatment. Keep in mind, once a stats object is created, no new stat types can be added or removed. 
         
@@ -36,7 +36,7 @@ public class Testing : MonoBehaviour
         expiryNotifier.TrackModifier(modifier);
         
         _mediator.AddModifier(modifier);
-        var query = new Stat.Query(_statCollection, _worldContexts);
+        var query = new StatQuery(_statCollection, _worldContexts);
         _mediator.PerformQuery(query);
         _statCollection[Stat.StatType.Health] = query.Stats[Stat.StatType.Health];
 
@@ -57,7 +57,7 @@ public class Testing : MonoBehaviour
         bool ExampleIsHealthBelowHalf(Stat.Modifier.Contexts contexts, Stat.Modifier.IExpireTrigger trigger)
         {
             // var health = contexts.QueryArgs.Query.Stats[Stat.StatType.Health]; // Unsafe as there might not be a health stat
-            if (contexts.Query.Stats.TryGetStat(Stat.StatType.Health, out Stat.MutableStat health))
+            if (contexts.Query.Stats.TryGetStat(Stat.StatType.Health, out MutableStat health))
             {
                 float currentHealth = health.Value;
                 float maxHealth = health.Max ?? float.MaxValue;

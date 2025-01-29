@@ -6,34 +6,63 @@ using System.Linq;
 namespace StatSystem
 {
     [Serializable]
-    public partial class Stats : Stats.IStatCollection<Stat>, Stats.IStatCollection
+    public class Stats : Stats<Stat>
     {
-        private StatCollectionStruct<Stat> _base;
-        private StatCollectionStruct<Stat> _modified;
-
-        public Stat.Mediator Mediator { get; } = new();
-
-        public Stats(params Stat[] stats)
+        public Stats(params Stat[] stats) : base(stats)
         {
-            _base = new StatCollectionStruct<Stat>(stats);
-            _modified = new StatCollectionStruct<Stat>(stats);
         }
     
-        public Stats(IEnumerable<Stat> stats)
+        public Stats(IEnumerable<Stat> stats) : base(stats)
         {
-            _base = new StatCollectionStruct<Stat>(stats);
-            _modified = new StatCollectionStruct<Stat>(stats);
+        }
+    }
+
+    public class Stats<T> : IStatCollection<T>, IStatCollection where T : IStat
+    {
+        private StatCollectionStruct<T> _base;
+        private StatCollectionStruct<T> _modified;
+
+        public Stats(params T[] stats)
+        {
+            _base = new StatCollectionStruct<T>(stats);
+            _modified = new StatCollectionStruct<T>(stats);
+        }
+    
+        public Stats(IEnumerable<T> stats)
+        {
+            _base = new StatCollectionStruct<T>(stats);
+            _modified = new StatCollectionStruct<T>(stats);
         }
 
-        public StatCollectionStruct<Stat> Base => _base;
-        public StatCollectionStruct<Stat> Modified => _modified;
+        public Mediator Mediator { get; } = new();
 
-        public Stat this[Stat.StatType type]
+        public StatCollectionStruct<T> Base => _base;
+
+        public StatCollectionStruct<T> Modified => _modified;
+        
+        public IEnumerable<Stat.StatType> Types => _base.Types;
+
+        public T this[Stat.StatType type]
         {
             get => _modified[type];
             set => _base[type] = value;
         }
+        
+        public bool Contains(Stat.StatType type)
+        {
+            return _base.Contains(type);
+        }
 
+        public bool TryGetStat(Stat.StatType type, out T stat) => _modified.TryGetStat(type, out stat);
+
+        IStat IReadOnlyStatCollection.this[Stat.StatType type] => _modified[type];
+
+        IStat IStatCollection.this[Stat.StatType type]
+        {
+            get => _modified[type];
+            set => _base[type] = value.ConvertTo<T>();
+        }
+        
         public void Update(WorldContexts worldContexts, params Stat.StatType[] types)
         {
             if (!types.Any()) types = Types.ToArray();
@@ -43,40 +72,29 @@ namespace StatSystem
             }
         }
 
-        private Stat PerformQuery(Stat.StatType type, WorldContexts worldContexts)
+        private T PerformQuery(Stat.StatType type, WorldContexts worldContexts)
         {
-            var query = new Stat.Query(this, worldContexts, type);
+            var query = new StatQuery(this, worldContexts, type);
             Mediator.PerformQuery(query);
-            return query.Stats[type];
+            var queryStat = query.Stats[type];
+            if (queryStat is T stat)
+            {
+                return stat;
+            }
+            else
+            {
+                return (T)Activator.CreateInstance(typeof(T), queryStat.Type, queryStat.Value, queryStat.Min, queryStat.Max, queryStat.Precision);
+            }
         }
 
-        private StatCollectionStruct<Stat> PerformQuery(WorldContexts worldContexts)
+        private StatCollectionStruct<T> PerformQuery(WorldContexts worldContexts)
         {
-            var query = new Stat.Query(this, worldContexts);
+            var query = new StatQuery(this, worldContexts);
             Mediator.PerformQuery(query);
-            return query.Stats;
+            return new StatCollectionStruct<T>(query.Stats.Cast<T>());
         }
 
-        public IEnumerable<Stat.IStat> Values => _base.Values;
-
-        public bool Contains(Stat.StatType type)
-        {
-            return _base.Contains(type);
-        }
-
-        public bool TryGetStat(Stat.StatType type, out Stat stat) => _base.TryGetStat(type, out stat);
-
-        Stat.IStat IReadOnlyStatCollection.this[Stat.StatType type] => ((IReadOnlyStatCollection)_base)[type];
-
-        Stat.IStat IStatCollection.this[Stat.StatType type]
-        {
-            get => ((IStatCollection)_base)[type];
-            set => ((IStatCollection)_base)[type] = value;
-        }
-
-        public IEnumerable<Stat.StatType> Types => _base.Types;
-
-        public IEnumerator<Stat> GetEnumerator() => _base.GetEnumerator();
+        public IEnumerator<T> GetEnumerator() => _modified.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
