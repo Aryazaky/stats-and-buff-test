@@ -5,8 +5,8 @@ namespace StatSystem
 {
     public interface IReadOnlyStatCollection : IEnumerable
     {
-        IStat this[Stat.StatType type] { get; }
-        IEnumerable<Stat.StatType> Types { get; }
-        bool Contains(Stat.StatType type);
+        IStat this[StatType type] { get; }
+        IEnumerable<StatType> Types { get; }
+        bool Contains(StatType type);
     }
 }

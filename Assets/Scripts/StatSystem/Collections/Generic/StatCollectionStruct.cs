@@ -5,13 +5,13 @@ using System.Linq;
 
 namespace StatSystem.Collections.Generic
 {
-    public class StatCollection<T> : IStatCollection<T>, IStatCollection where T : IStat
+    public struct StatCollectionStruct<T> : IStatCollection<T>, IStatCollection where T : IStat
     {
         private readonly Dictionary<StatType, T> _stats;
 
-        public StatCollection(params T[] stats) => _stats = stats.ToDictionary(stat => stat.Type);
+        public StatCollectionStruct(params T[] stats) => _stats = stats.ToDictionary(stat => stat.Type);
 
-        public StatCollection(IEnumerable<T> stats) => _stats = stats.ToDictionary(stat => stat.Type);
+        public StatCollectionStruct(IEnumerable<T> stats) => _stats = stats.ToDictionary(stat => stat.Type);
 
         public T this[StatType type]
         {
@@ -43,11 +43,5 @@ namespace StatSystem.Collections.Generic
 
         public IEnumerator<T> GetEnumerator() => _stats.Values.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-        
-        public override string ToString()
-        {
-            return $"StatCollection<{typeof(T).Name}>: [{string.Join(", ", _stats.Select(kv => $"{kv.Key}: {kv.Value}"))}]";
-        }
-
     }
 }

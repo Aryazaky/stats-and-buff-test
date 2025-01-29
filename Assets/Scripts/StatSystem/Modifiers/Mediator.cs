@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using StatSystem.Collections;
 
 namespace StatSystem.Modifiers
 {
@@ -16,7 +17,7 @@ namespace StatSystem.Modifiers
             _onModifierRemoved = onModifierRemoved;
         }
 
-        public void PerformQuery(StatQuery query)
+        public void PerformQuery(Query query)
         {
             foreach (var modifier in _modifiers.ToArray())
             {

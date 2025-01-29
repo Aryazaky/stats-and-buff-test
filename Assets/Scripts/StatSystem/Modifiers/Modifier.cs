@@ -1,4 +1,5 @@
 ﻿using System;
+using StatSystem.Collections;
 using UnityEngine;
 
 namespace StatSystem.Modifiers
@@ -35,7 +36,7 @@ namespace StatSystem.Modifiers
 
         public bool IsExpired { get; private set; }
 
-        public virtual void Handle(StatQuery query)
+        public virtual void Handle(Query query)
         {
             if (!IsExpired)
             {

@@ -60,11 +60,6 @@ namespace StatSystem
         public bool IsReadOnly => ((ICollection<IWorldContext>)_activeContexts).IsReadOnly;
     }
 
-    public interface IWorldContext
-    {
-        string Name { get; }
-    }
-
     public class ExampleIsRaining : IWorldContext
     {
         public string Name => "Hungry player";

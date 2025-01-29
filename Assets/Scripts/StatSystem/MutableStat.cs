@@ -1,3 +1,5 @@
+using System;
+
 namespace StatSystem
 {
     /// <summary>
@@ -5,11 +7,75 @@ namespace StatSystem
     /// </summary>
     public class MutableStat : IStat
     {
-        public Stat.StatType Type { get; }
-        public float Value { get; set; }
-        public float? Min { get; set; }
-        public float? Max { get; set; }
-        public int Precision { get; }
+        private float _value;
+        private float? _min;
+        private float? _max;
+        private int _precision;
+        
+        public StatType Type { get; }
+
+        public float Value
+        {
+            get => _value;
+            set {
+                value = _max.HasValue ? MathF.Min(_max.Value, value) : value;
+                value = _min.HasValue ? MathF.Max(_min.Value, value) : value;
+                _value = MathF.Round(value, _precision);
+            }
+        }
+
+        public float? Min
+        {
+            get => _min;
+            set
+            {
+                if(value.HasValue)
+                {
+                    if (value > _max)
+                    {
+                        throw new Exception($"Min value ({value}) cannot be more than Max value ({_max}).");
+                    }
+                    else _min = value;
+                }
+                else
+                {
+                    _min = null;
+                }
+            }
+        }
+
+        public float? Max
+        {
+            get => _max;
+            set
+            {
+                if(value.HasValue)
+                {
+                    if (value < _min)
+                    {
+                        throw new Exception($"Max value ({value}) cannot be more than Min value ({_min}).");
+                    }
+                    else _max = value;
+                }
+                else
+                {
+                    _max = null;
+                }
+            }
+        }
+
+        public int Precision
+        {
+            get => _precision;
+            set
+            {
+                if (value < 0)
+                {
+                    throw new Exception($"Decimal places precision ({value}) cannot be negative.");
+                }
+                _precision = value;
+            }
+        }
 
         /// <summary>
         /// Converts a Stat into a ModifiableStat class. 
@@ -17,19 +83,19 @@ namespace StatSystem
         public MutableStat(IStat stat)
         {
             Type = stat.Type;
-            Value = stat.Value;
             Min = stat.Min;
             Max = stat.Max;
             Precision = stat.Precision;
+            Value = stat.Value;
         }
 
-        public MutableStat(Stat.StatType type, float value, float? min = 0, float? max = null, int precision = 0)
+        public MutableStat(StatType type, float value, float? min = 0, float? max = null, int precision = 0)
         {
             Type = type;
-            Value = value;
-            Min = min;
-            Max = max;
             Precision = precision;
+            Max = max;
+            Min = min;
+            Value = value;
         }
 
         public static implicit operator Stat(MutableStat stat)

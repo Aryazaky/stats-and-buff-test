@@ -4,9 +4,9 @@ namespace StatSystem.Collections.Generic
 {
     public interface IReadOnlyStatCollection<T> : IEnumerable<T> where T : IStat
     {
-        T this[Stat.StatType type] { get; }
-        IEnumerable<Stat.StatType> Types { get; }
-        bool Contains(Stat.StatType type);
-        bool TryGetStat(Stat.StatType type, out T stat);
+        T this[StatType type] { get; }
+        IEnumerable<StatType> Types { get; }
+        bool Contains(StatType type);
+        bool TryGetStat(StatType type, out T stat);
     }
 }

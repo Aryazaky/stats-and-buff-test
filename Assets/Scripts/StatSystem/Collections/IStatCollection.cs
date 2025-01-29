@@ -2,6 +2,6 @@ namespace StatSystem.Collections
 {
     public interface IStatCollection : IReadOnlyStatCollection
     {
-        new IStat this[Stat.StatType type] { get; set; }
+        new IStat this[StatType type] { get; set; }
     }
 }

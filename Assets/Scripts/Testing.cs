@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using StatSystem;
 using StatSystem.Collections;
+using StatSystem.Collections.Generic;
 using StatSystem.Concrete_Classes.Expiry_Notifiers;
 using StatSystem.Concrete_Classes.Modifiers;
 using StatSystem.Modifiers;
@@ -12,20 +13,32 @@ public class Testing : MonoBehaviour
 {
     private Stats _stats;
     private StatCollection _statCollection;
+    private StatCollection<MutableStat> _base;
+    private Mediator _booster;
+    private StatCollection<MutableStat> _boosted; // Base stats after equip
+    private StatCollection<MutableStat> _scaled;
     private Mediator _mediator = new();
     private WorldContexts _worldContexts = new WorldContexts(); // Just imagine this is getting the world contexts from somewhere else
 
     void Start()
     {
-        var hp = new Stat(Stat.StatType.Health, value: 10, min: 0, max: 50);
-        var mana = new Stat(Stat.StatType.Mana, 5, 0, 10);
-        var strength = new Stat(Stat.StatType.Strength, 10); // Uncapped stats is also possible!
+        var hp = new Stat(StatType.Health, value: 10, min: 0, max: 50);
+        var mana = new Stat(StatType.Mana, 5, 0, 10);
+        var strength = new Stat(StatType.Strength, 10); // Uncapped stats is also possible!
+
+        _base = new StatCollection<MutableStat>(new MutableStat(hp), new MutableStat(mana), new MutableStat(strength));
+        Debug.Log(_base);
+        _boosted = new StatCollection<MutableStat>(_base);
+        _boosted[StatType.Health].Max += 10; // Expected result: 10/60
+        _boosted[StatType.Health].Value += 100; // Expected result: 60/60
+        Debug.Log(_boosted);
+        
         _statCollection = new StatCollection(hp, mana, strength);
         
         _stats = new Stats(hp, mana); // This is a params. Can put any number of stats. Duplicates types get a last one survive treatment. Keep in mind, once a stats object is created, no new stat types can be added or removed. 
         
         var modifier = new StatModifier( // We're using a StatModifier class, but you can create your own!
-            Stat.StatType.Health, // Also accept a collection of stat types!
+            StatType.Health, // Also accept a collection of stat types!
             operation: ExampleOperations, 
             activePrerequisite: ExampleIsHealthBelowHalf,
             priority: Modifier.PriorityType.Boost // Example setting priority in case there's multiple modifiers. This is an integer value. 
@@ -39,28 +52,28 @@ public class Testing : MonoBehaviour
         expiryNotifier.TrackModifier(modifier);
         
         _mediator.AddModifier(modifier);
-        var query = new StatQuery(_statCollection, _worldContexts);
+        var query = new Query(_statCollection, _worldContexts);
         _mediator.PerformQuery(query);
-        _statCollection[Stat.StatType.Health] = query.Stats[Stat.StatType.Health];
+        _statCollection[StatType.Health] = query.Stats[StatType.Health];
 
         _stats.Mediator.AddModifier(modifier);
-        Debug.Log($"0:Health: {_stats[Stat.StatType.Health]}");
+        Debug.Log($"0:Health: {_stats[StatType.Health]}");
         _stats.Update(_worldContexts);
-        Debug.Log($"1:Health: {_stats[Stat.StatType.Health]}");
+        Debug.Log($"1:Health: {_stats[StatType.Health]}");
         _stats.Update(_worldContexts);
-        Debug.Log($"2:Health: {_stats[Stat.StatType.Health]}");
+        Debug.Log($"2:Health: {_stats[StatType.Health]}");
         _stats.Update(_worldContexts);
-        Debug.Log($"3:Health: {_stats[Stat.StatType.Health]}");
+        Debug.Log($"3:Health: {_stats[StatType.Health]}");
         _stats.Update(_worldContexts);
-        Debug.Log($"4:Health: {_stats[Stat.StatType.Health]}");
+        Debug.Log($"4:Health: {_stats[StatType.Health]}");
         _stats.Update(_worldContexts);
-        Debug.Log($"5:Health: {_stats[Stat.StatType.Health]}");
+        Debug.Log($"5:Health: {_stats[StatType.Health]}");
         return;
 
         bool ExampleIsHealthBelowHalf(Modifier.Contexts contexts, Modifier.IExpireTrigger trigger)
         {
             // var health = contexts.QueryArgs.Query.Stats[Stat.StatType.Health]; // Unsafe as there might not be a health stat
-            if (contexts.Query.Stats.TryGetStat(Stat.StatType.Health, out MutableStat health))
+            if (contexts.Query.Stats.TryGetStat(StatType.Health, out MutableStat health))
             {
                 float currentHealth = health.Value;
                 float maxHealth = health.Max ?? float.MaxValue;

@@ -1,13 +1,15 @@
+using StatSystem.Collections;
+
 namespace StatSystem.Modifiers
 {
     public abstract partial class Modifier
     {
         public readonly struct Contexts
         {
-            public readonly StatQuery Query;
+            public readonly Query Query;
             public readonly Metadata ModifierMetadata;
 
-            public Contexts(StatQuery query, Modifier modifier)
+            public Contexts(Query query, Modifier modifier)
             {
                 Query = query;
                 ModifierMetadata = new Metadata(modifier);
