@@ -1,4 +1,4 @@
-namespace StatSystem
+namespace StatSystem.Collections
 {
     public class StatsIndexer
     {

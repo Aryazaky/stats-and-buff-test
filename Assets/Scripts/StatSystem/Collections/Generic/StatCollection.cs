@@ -3,15 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace StatSystem
+namespace StatSystem.Collections.Generic
 {
-    public struct StatCollectionStruct<T> : IStatCollection<T>, IStatCollection where T : IStat
+    public struct StatCollection<T> : IStatCollection<T>, IStatCollection where T : IStat
     {
         private readonly Dictionary<Stat.StatType, T> _stats;
 
-        public StatCollectionStruct(params T[] stats) => _stats = stats.ToDictionary(stat => stat.Type);
+        public StatCollection(params T[] stats) => _stats = stats.ToDictionary(stat => stat.Type);
 
-        public StatCollectionStruct(IEnumerable<T> stats) => _stats = stats.ToDictionary(stat => stat.Type);
+        public StatCollection(IEnumerable<T> stats) => _stats = stats.ToDictionary(stat => stat.Type);
 
         public T this[Stat.StatType type]
         {

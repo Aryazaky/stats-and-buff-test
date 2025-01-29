@@ -2,43 +2,32 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using StatSystem.Modifiers;
 
-namespace StatSystem
+namespace StatSystem.Collections.Generic
 {
-    [Serializable]
-    public class Stats : Stats<Stat>
-    {
-        public Stats(params Stat[] stats) : base(stats)
-        {
-        }
-    
-        public Stats(IEnumerable<Stat> stats) : base(stats)
-        {
-        }
-    }
-
     public class Stats<T> : IStatCollection<T>, IStatCollection where T : IStat
     {
-        private StatCollectionStruct<T> _base;
-        private StatCollectionStruct<T> _modified;
+        private StatCollection<T> _base;
+        private StatCollection<T> _modified;
 
         public Stats(params T[] stats)
         {
-            _base = new StatCollectionStruct<T>(stats);
-            _modified = new StatCollectionStruct<T>(stats);
+            _base = new StatCollection<T>(stats);
+            _modified = new StatCollection<T>(stats);
         }
     
         public Stats(IEnumerable<T> stats)
         {
-            _base = new StatCollectionStruct<T>(stats);
-            _modified = new StatCollectionStruct<T>(stats);
+            _base = new StatCollection<T>(stats);
+            _modified = new StatCollection<T>(stats);
         }
 
         public Mediator Mediator { get; } = new();
 
-        public StatCollectionStruct<T> Base => _base;
+        public StatCollection<T> Base => _base;
 
-        public StatCollectionStruct<T> Modified => _modified;
+        public StatCollection<T> Modified => _modified;
         
         public IEnumerable<Stat.StatType> Types => _base.Types;
 
@@ -87,11 +76,11 @@ namespace StatSystem
             }
         }
 
-        private StatCollectionStruct<T> PerformQuery(WorldContexts worldContexts)
+        private StatCollection<T> PerformQuery(WorldContexts worldContexts)
         {
             var query = new StatQuery(this, worldContexts);
             Mediator.PerformQuery(query);
-            return new StatCollectionStruct<T>(query.Stats.Cast<T>());
+            return new StatCollection<T>(query.Stats.Cast<T>());
         }
 
         public IEnumerator<T> GetEnumerator() => _modified.GetEnumerator();

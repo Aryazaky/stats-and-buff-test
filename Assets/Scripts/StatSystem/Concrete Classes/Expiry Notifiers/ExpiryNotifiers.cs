@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using StatSystem;
+using StatSystem.Modifiers;
 
 namespace StatSystem.Concrete_Classes.Expiry_Notifiers
 {
-    public class InvokeLimitExpiryNotifier : Stat.Modifier.IExpiryNotifier
+    public class InvokeLimitExpiryNotifier : Modifier.IExpiryNotifier
     {
         private readonly int _invokeLimit;
-        private readonly List<Stat.Modifier> _trackedModifiers = new();
+        private readonly List<Modifier> _trackedModifiers = new();
 
         public InvokeLimitExpiryNotifier(int invokeLimit)
         {
@@ -17,7 +19,7 @@ namespace StatSystem.Concrete_Classes.Expiry_Notifiers
             _invokeLimit = invokeLimit;
         }
 
-        public void TrackModifier(Stat.Modifier modifier)
+        public void TrackModifier(Modifier modifier)
         {
             if (_trackedModifiers.Contains(modifier))
                 throw new InvalidOperationException("This modifier is already being tracked.");
@@ -36,7 +38,7 @@ namespace StatSystem.Concrete_Classes.Expiry_Notifiers
             }
         }
 
-        private void CheckLimit(Stat.Modifier modifier)
+        private void CheckLimit(Modifier modifier)
         {
             if (modifier.InvokedCount >= _invokeLimit)
             {
@@ -44,7 +46,7 @@ namespace StatSystem.Concrete_Classes.Expiry_Notifiers
             }
         }
 
-        private void RemoveModifier(Stat.Modifier modifier)
+        private void RemoveModifier(Modifier modifier)
         {
             _trackedModifiers.Remove(modifier);
             modifier.OnInvoke -= CheckLimit;
@@ -52,10 +54,10 @@ namespace StatSystem.Concrete_Classes.Expiry_Notifiers
         }
     }
 
-    public class TimeLimitExpiryNotifier : Stat.Modifier.IExpiryNotifier
+    public class TimeLimitExpiryNotifier : Modifier.IExpiryNotifier
     {
         private readonly float _timeLimit;
-        private readonly List<Stat.Modifier> _trackedModifiers = new();
+        private readonly List<Modifier> _trackedModifiers = new();
 
         public TimeLimitExpiryNotifier(float timeLimit)
         {
@@ -65,7 +67,7 @@ namespace StatSystem.Concrete_Classes.Expiry_Notifiers
             _timeLimit = timeLimit;
         }
 
-        public void TrackModifier(Stat.Modifier modifier)
+        public void TrackModifier(Modifier modifier)
         {
             if (_trackedModifiers.Contains(modifier))
                 throw new InvalidOperationException("This modifier is already being tracked.");
@@ -84,7 +86,7 @@ namespace StatSystem.Concrete_Classes.Expiry_Notifiers
             }
         }
 
-        private void CheckLimit(Stat.Modifier modifier)
+        private void CheckLimit(Modifier modifier)
         {
             if (Time.time - modifier.CreatedTime >= _timeLimit)
             {
@@ -92,7 +94,7 @@ namespace StatSystem.Concrete_Classes.Expiry_Notifiers
             }
         }
 
-        private void RemoveModifier(Stat.Modifier modifier)
+        private void RemoveModifier(Modifier modifier)
         {
             _trackedModifiers.Remove(modifier);
             modifier.OnTryInvoke -= CheckLimit;

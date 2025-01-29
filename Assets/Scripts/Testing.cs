@@ -1,9 +1,12 @@
 using System;
 using System.Linq;
 using StatSystem;
+using StatSystem.Collections;
 using StatSystem.Concrete_Classes.Expiry_Notifiers;
 using StatSystem.Concrete_Classes.Modifiers;
+using StatSystem.Modifiers;
 using UnityEngine;
+using Modifier = StatSystem.Modifiers.Modifier;
 
 public class Testing : MonoBehaviour
 {
@@ -25,7 +28,7 @@ public class Testing : MonoBehaviour
             Stat.StatType.Health, // Also accept a collection of stat types!
             operation: ExampleOperations, 
             activePrerequisite: ExampleIsHealthBelowHalf,
-            priority: Stat.Modifier.PriorityType.Boost // Example setting priority in case there's multiple modifiers. This is an integer value. 
+            priority: Modifier.PriorityType.Boost // Example setting priority in case there's multiple modifiers. This is an integer value. 
         );
         
         // Example adding world context
@@ -54,7 +57,7 @@ public class Testing : MonoBehaviour
         Debug.Log($"5:Health: {_stats[Stat.StatType.Health]}");
         return;
 
-        bool ExampleIsHealthBelowHalf(Stat.Modifier.Contexts contexts, Stat.Modifier.IExpireTrigger trigger)
+        bool ExampleIsHealthBelowHalf(Modifier.Contexts contexts, Modifier.IExpireTrigger trigger)
         {
             // var health = contexts.QueryArgs.Query.Stats[Stat.StatType.Health]; // Unsafe as there might not be a health stat
             if (contexts.Query.Stats.TryGetStat(Stat.StatType.Health, out MutableStat health))
@@ -66,12 +69,12 @@ public class Testing : MonoBehaviour
             else return false;
         }
 
-        bool ExampleUsingContexts(Stat.Modifier.Contexts contexts, Stat.Modifier.IExpireTrigger trigger)
+        bool ExampleUsingContexts(Modifier.Contexts contexts, Modifier.IExpireTrigger trigger)
         {
             return contexts.Query.WorldContexts.Contains<ExampleIsRaining>();
         }
 
-        bool ExampleOncePerSecondActivationAsLongAsQueriedStatsAreMoreThanZeroElseEndInstantly(Stat.Modifier.Contexts contexts, Stat.Modifier.IExpireTrigger trigger)
+        bool ExampleOncePerSecondActivationAsLongAsQueriedStatsAreMoreThanZeroElseEndInstantly(Modifier.Contexts contexts, Modifier.IExpireTrigger trigger)
         {
             var query = contexts.Query;
             var stats = query.Stats;
@@ -82,7 +85,7 @@ public class Testing : MonoBehaviour
             return result;
         }
 
-        void ExampleOperations(Stat.Modifier.Contexts contexts)
+        void ExampleOperations(Modifier.Contexts contexts)
         {
             var stats = contexts.Query.Stats;
             // Capturing outside variables like this are not recommended. Make sure you know what you're doing. Avoid calling Update() to avoid stackoverflow. 
