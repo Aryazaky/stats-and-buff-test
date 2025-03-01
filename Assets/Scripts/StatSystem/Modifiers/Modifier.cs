@@ -36,7 +36,7 @@ namespace StatSystem.Modifiers
 
         public bool IsExpired { get; private set; }
 
-        public virtual void Handle(Query query)
+        public virtual void Handle(IQuery query)
         {
             if (!IsExpired)
             {

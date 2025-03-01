@@ -1,12 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
+using StatSystem.Collections.Generic;
 
-namespace StatSystem
+namespace StatSystem.Collections
 {
     public interface IReadOnlyStatCollection : IEnumerable
     {
-        IStat this[StatType type] { get; }
         IEnumerable<StatType> Types { get; }
-        bool Contains(StatType type);
+        bool Contains(params StatType[] type);
+        bool TryGetStat(StatType type, out IStat stat);
     }
 }

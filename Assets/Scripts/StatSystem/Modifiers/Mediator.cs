@@ -17,7 +17,7 @@ namespace StatSystem.Modifiers
             _onModifierRemoved = onModifierRemoved;
         }
 
-        public void PerformQuery(Query query)
+        public void PerformQuery(IQuery query)
         {
             foreach (var modifier in _modifiers.ToArray())
             {

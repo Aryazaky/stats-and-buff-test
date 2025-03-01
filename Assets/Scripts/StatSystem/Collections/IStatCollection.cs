@@ -1,7 +1,8 @@
+using StatSystem.Collections.Generic;
+
 namespace StatSystem.Collections
 {
-    public interface IStatCollection : IReadOnlyStatCollection
+    public interface IStatCollection : IReadOnlyStatCollection, IIndexer
     {
-        new IStat this[StatType type] { get; set; }
     }
 }

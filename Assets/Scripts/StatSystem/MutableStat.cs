@@ -102,6 +102,30 @@ namespace StatSystem
         {
             return new Stat(type: stat.Type, value: stat.Value, min: stat.Min, max: stat.Max, precision: stat.Precision);
         }
+        
+        private MutableStat PerformOperation(Stat other, Func<float, float, float> operation)
+        {
+            if (Type != other.Type)
+                throw new InvalidOperationException($"Cannot operate on Stats of different types: {Type} and {other.Type}");
+
+            return new MutableStat(Type, operation(Value, other.Value), Min, Max, Precision);
+        }
+
+        private MutableStat PerformOperation(float value, Func<float, float, float> operation)
+        {
+            return new MutableStat(Type, operation(Value, value), Min, Max, Precision);
+        }
+        
+        public static MutableStat operator +(MutableStat a, MutableStat b) => a.PerformOperation(b, (x, y) => x + y);
+        public static MutableStat operator -(MutableStat a, MutableStat b) => a.PerformOperation(b, (x, y) => x - y);
+        public static MutableStat operator +(MutableStat stat, float value) => stat.PerformOperation(value, (x, y) => x + y);
+        public static MutableStat operator +(float value, MutableStat stat) => stat + value;
+        public static MutableStat operator -(MutableStat stat, float value) => stat.PerformOperation(value, (x, y) => x - y);
+        public static MutableStat operator -(float value, MutableStat stat) => new MutableStat(stat.Type, value - stat.Value, stat.Min, stat.Max, stat.Precision);
+        public static MutableStat operator *(MutableStat stat, float value) => stat.PerformOperation(value, (x, y) => x * y);
+        public static MutableStat operator *(float value, MutableStat stat) => stat * value;
+        public static MutableStat operator /(MutableStat stat, float value) => stat.PerformOperation(value, (x, y) => x / y);
+        public static MutableStat operator /(float value, MutableStat stat) => new MutableStat(stat.Type, value / stat.Value, stat.Min, stat.Max, stat.Precision);
 
         public override string ToString()
         {

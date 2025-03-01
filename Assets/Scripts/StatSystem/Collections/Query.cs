@@ -1,22 +1,24 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using StatSystem.Collections.Generic;
 
 namespace StatSystem.Collections
 {
     /// A class with properties that can be viewed or freely be changed while it undergone a journey through multiple modifiers. 
-    public class Query
+    public class Query : IQuery
     {
-        public StatCollection Stats { get; }
-        public Indexer BaseStats { get; }
-        public StatType[] Types { get; }
-        public WorldContexts WorldContexts { get; }
+        public IStatCollection Stats { get; }
+        public IIndexer BaseStats { get; }
+        public IEnumerable<StatType> Types { get; }
+        public IReadOnlyWorldContexts WorldContexts { get; }
 
-        public Query(IStatCollection stats, WorldContexts worldContexts, params StatType[] types)
+        public Query(IStatCollection stats, IReadOnlyWorldContexts worldContexts, params StatType[] types)
         {
             WorldContexts = worldContexts;
             Types = types;
             Stats = new StatCollection(stats);
-            BaseStats = new Indexer(stats);
+            BaseStats = stats;
 
             if (types.Any(type => !stats.Contains(type)))
             {

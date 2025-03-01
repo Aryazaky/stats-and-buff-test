@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
+using StatSystem;
 using StatSystem.Collections;
 using StatSystem.Modifiers;
 
-namespace StatSystem.Concrete_Classes.Modifiers
+namespace ConcreteClasses.Modifiers
 {
     public class StatModifier : Modifier
     {
@@ -17,7 +18,7 @@ namespace StatSystem.Concrete_Classes.Modifiers
             _types = new[] { type };
         }
 
-        public override void Handle(Query query)
+        public override void Handle(IQuery query)
         {
             if (query.Types.Intersect(_types).Any())
             {

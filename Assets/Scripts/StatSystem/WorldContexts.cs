@@ -1,10 +1,11 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace StatSystem
 {
-    public class WorldContexts : ICollection<IWorldContext>
+    public class WorldContexts : ICollection<IWorldContext>, IReadOnlyWorldContexts
     {
         private readonly HashSet<IWorldContext> _activeContexts;
 
@@ -40,9 +41,10 @@ namespace StatSystem
             return _activeContexts.Contains(item);
         }
 
-        public bool Contains<T>() where T : IWorldContext
+        public bool Contains<T>(Func<T, bool> predicate = null) where T : IWorldContext
         {
-            return _activeContexts.OfType<T>().Any();
+            predicate ??= _ => true; 
+            return _activeContexts.OfType<T>().Any(predicate);
         }
 
         public void CopyTo(IWorldContext[] array, int arrayIndex)
@@ -58,10 +60,5 @@ namespace StatSystem
         public int Count => _activeContexts.Count;
 
         public bool IsReadOnly => ((ICollection<IWorldContext>)_activeContexts).IsReadOnly;
-    }
-
-    public class ExampleIsRaining : IWorldContext
-    {
-        public string Name => "Hungry player";
     }
 }

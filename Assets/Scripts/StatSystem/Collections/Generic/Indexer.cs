@@ -1,6 +1,6 @@
 namespace StatSystem.Collections.Generic
 {
-    public class Indexer<T> where T : IStat
+    public class Indexer<T> : IIndexer<T> where T : IStat
     {
         private readonly IStatCollection<T> _stats;
         public Indexer(IStatCollection<T> stats)

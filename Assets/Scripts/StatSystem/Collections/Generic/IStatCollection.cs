@@ -1,7 +1,6 @@
 namespace StatSystem.Collections.Generic
 {
-    public interface IStatCollection<T> : IReadOnlyStatCollection<T> where T : IStat
+    public interface IStatCollection<T> : IReadOnlyStatCollection<T>, IIndexer<T> where T : IStat
     {
-        new T this[StatType type] { get; set; }
     }
 }

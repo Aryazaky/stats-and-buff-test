@@ -6,64 +6,67 @@ using StatSystem.Modifiers;
 
 namespace StatSystem.Collections.Generic
 {
-    public class Stats<T> : IStatCollection<T>, IStatCollection where T : IStat
+    public class Stats<T> : IStatCollection<T>, IStatCollection, IStats where T : IStat
     {
-        private StatCollectionStruct<T> _base;
-        private StatCollectionStruct<T> _modified;
+        private IStatCollection<T> _base;
+        private IStatCollection<T> _modified;
 
         public Stats(params T[] stats)
         {
             _base = new StatCollectionStruct<T>(stats);
             _modified = new StatCollectionStruct<T>(stats);
+            Mediator = new Mediator(_ => IsDirty = true, _ => IsDirty = true);
         }
     
         public Stats(IEnumerable<T> stats)
         {
             _base = new StatCollectionStruct<T>(stats);
             _modified = new StatCollectionStruct<T>(stats);
+            Mediator = new Mediator(_ => IsDirty = true, _ => IsDirty = true);
         }
 
-        public Mediator Mediator { get; } = new();
+        public Mediator Mediator { get; }
+        public bool IsDirty { get; private set; }
 
-        public StatCollectionStruct<T> Base => _base;
-
-        public StatCollectionStruct<T> Modified => _modified;
-        
         public IEnumerable<StatType> Types => _base.Types;
+
+        public IStatCollection<T> Base
+        {
+            get
+            {
+                IsDirty = true;
+                return _base;
+            }
+        }
 
         public T this[StatType type]
         {
             get => _modified[type];
-            set => _base[type] = value;
+            set => _modified[type] = value;
         }
         
-        public bool Contains(StatType type)
+        IStat IIndexer.this[StatType type]
         {
-            return _base.Contains(type);
+            get => this[type];
+            set => this[type] = value.ConvertTo<T>();
         }
 
-        public bool TryGetStat(StatType type, out T stat) => _modified.TryGetStat(type, out stat);
-
-        IStat IReadOnlyStatCollection.this[StatType type] => _modified[type];
-
-        IStat IStatCollection.this[StatType type]
-        {
-            get => _modified[type];
-            set => _base[type] = value.ConvertTo<T>();
-        }
+        public void Bake() => _base = _modified;
         
-        public void Update(WorldContexts worldContexts, params StatType[] types)
+        public void Update(IReadOnlyWorldContexts worldContexts, params StatType[] types)
         {
             if (!types.Any()) types = Types.ToArray();
             foreach (var type in types)
             {
-                _modified[type] = PerformQuery(type, worldContexts); // This will make it so that the value of buffs be temporary. 
+                _modified[type] = PerformQuery(worldContexts, type); // This will make it so that the value of buffs be temporary. 
             }
+
+            IsDirty = false;
         }
 
-        private T PerformQuery(StatType type, WorldContexts worldContexts)
+        private T PerformQuery(IReadOnlyWorldContexts worldContexts, StatType type)
         {
-            var query = new Query(this, worldContexts, type);
+            var query = new Query<T>(this, worldContexts, type);
             Mediator.PerformQuery(query);
             var queryStat = query.Stats[type];
             if (queryStat is T stat)
@@ -76,15 +79,36 @@ namespace StatSystem.Collections.Generic
             }
         }
 
-        private StatCollectionStruct<T> PerformQuery(WorldContexts worldContexts)
+        private IStatCollection<T> PerformQuery(IReadOnlyWorldContexts worldContexts)
         {
-            var query = new Query(this, worldContexts);
+            var query = new Query<T>(this, worldContexts);
             Mediator.PerformQuery(query);
             return new StatCollectionStruct<T>(query.Stats.Cast<T>());
         }
+        
+        public bool Contains(params StatType[] type) => _base.Contains(type);
+        
+        public bool TryGetStat(StatType type, out IStat stat)
+        {
+            if (_modified.TryGetStat(type, out var value))
+            {
+                stat = value;
+                return true;
+            }
+
+            stat = null;
+            return false;
+        }
+
+        public bool TryGetStat(StatType type, out T stat) => _modified.TryGetStat(type, out stat);
 
         public IEnumerator<T> GetEnumerator() => _modified.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public override string ToString()
+        {
+            return _modified.ToString();
+        }
     }
 }
