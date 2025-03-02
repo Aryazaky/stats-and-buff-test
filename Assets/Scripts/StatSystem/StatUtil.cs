@@ -1,18 +1,18 @@
 using System;
+using System.Linq;
+using StatSystem.Collections;
 
 namespace StatSystem
 {
     public static class StatUtil
     {
-        public static T ConvertTo<T>(this IStat stat) where T : IStat
+        public static StatCollectionStruct ToStruct(this StatCollection statCollection)
         {
-            return stat switch
-            {
-                T correctStat => correctStat,
-                Stat s when typeof(T) == typeof(MutableStat) => (T)(object)new MutableStat(s),
-                MutableStat s when typeof(T) == typeof(Stat) => (T)(object)(Stat)s,
-                _ => (T)Activator.CreateInstance(typeof(T), stat.Type, stat.Value, stat.Min, stat.Max, stat.Precision)
-            };
+            return (StatCollectionStruct)statCollection;
+        }
+        public static StatCollection ToClass(this StatCollectionStruct statCollection)
+        {
+            return new StatCollection(statCollection);
         }
     }
 }

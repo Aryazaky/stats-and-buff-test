@@ -9,15 +9,15 @@ namespace StatSystem.Collections
     public class Query : IQuery
     {
         public StatCollection TemporaryStats { get; }
-        public IIndexer ReferenceStats { get; }
+        public StatCollection ReferenceStats { get; }
         public IEnumerable<StatType> Types { get; }
         public IReadOnlyWorldContexts WorldContexts { get; }
 
-        public Query(IStatCollection stats, IReadOnlyWorldContexts worldContexts, params StatType[] types)
+        public Query(StatCollection stats, IReadOnlyWorldContexts worldContexts, params StatType[] types)
         {
             WorldContexts = worldContexts;
             Types = types;
-            TemporaryStats = new StatCollection(stats);
+            TemporaryStats = new StatCollection(stats.ToStruct());
             ReferenceStats = stats;
 
             if (types.Any(type => !stats.Contains(type)))

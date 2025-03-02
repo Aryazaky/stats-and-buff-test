@@ -5,7 +5,7 @@ namespace StatSystem
     /// <summary>
     /// An immutable stat with a type, value, and optional min/max range, supporting precision handling.
     /// </summary>
-    public readonly partial struct Stat : IStat
+    public readonly struct Stat
     {
         public StatType Type { get; }
 

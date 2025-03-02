@@ -22,24 +22,33 @@ public class Testing2 : MonoBehaviour
 
         var hpRegenStatus = new StatModifier(
             StatType.Health, 
-            activePrerequisite: StatModifierActivationConditions.ActiveFor2Seconds, 
+            activePrerequisite: StatModifierActivationConditions.InvokeOnce, 
             operation: StatModifierOperations.Regen
             );
         
         _base.Mediator.AddModifier(hpRegenStatus);
         _base[StatType.Health] -= 5;
-        Debug.Log(_base);
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
+        Debug.Log($"before: {_base}");
         _base.Update(_worldContexts);
+        Debug.Log($"update1: {_base}");
+        _base.Update(_worldContexts);
+        Debug.Log($"update2: {_base}");
+        _base.Update(_worldContexts);
+        Debug.Log($"update3: {_base}");
+        _base.Update(_worldContexts);
+        Debug.Log($"update4: {_base}");
+        _base.Update(_worldContexts);
+        Debug.Log($"update5: {_base}");
     }
 }
 
 public static class StatModifierActivationConditions
 {
+    public static bool InvokeOnce(Modifier.Contexts contexts, Modifier.IExpireTrigger trigger)
+    {
+        return contexts.ModifierMetadata.InvokedCount < 3;
+    }
+    
     public static bool AlwaysActive(Modifier.Contexts contexts, Modifier.IExpireTrigger trigger)
     {
         return true;
@@ -47,7 +56,7 @@ public static class StatModifierActivationConditions
     
     public static bool ActiveFor2Seconds(Modifier.Contexts contexts, Modifier.IExpireTrigger trigger)
     {
-        if (contexts.ModifierMetadata.LastInvokeTime > 2)
+        if (Time.time - contexts.ModifierMetadata.CreatedTime > 2)
         {
             trigger.Expire();
         }
@@ -77,16 +86,18 @@ public static class StatModifierOperations
             hp.Value += 10;
             Debug.Log("Temp:" +stats);
         }
-        
-        if (statsRef is Stats s && s.Contains(StatType.Health, StatType.HealthRegen))
-        {
-            Debug.Log(s[StatType.Health]);
-            s[StatType.Health] += s[StatType.HealthRegen].Value;
-            s.Bake();
-            Debug.Log(s);
-        }
 
-        Debug.Log(statsRef);
+        statsRef[StatType.Health] += statsRef[StatType.HealthRegen].Value;
+        
+        // if (statsRef is Stats s && s.Contains(StatType.Health, StatType.HealthRegen))
+        // {
+        //     Debug.Log(s[StatType.Health]);
+        //     s[StatType.Health] += s[StatType.HealthRegen].Value;
+        //     s.Bake();
+        //     Debug.Log(s);
+        // }
+
+        Debug.Log("Ref:"+statsRef);
     }
     
     public static void ExampleOperations(Modifier.Contexts contexts)

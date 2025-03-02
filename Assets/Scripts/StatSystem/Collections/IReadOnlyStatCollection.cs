@@ -4,10 +4,10 @@ using StatSystem.Collections.Generic;
 
 namespace StatSystem.Collections
 {
-    public interface IReadOnlyStatCollection : IEnumerable
+    public interface IReadOnlyStatCollection
     {
         IEnumerable<StatType> Types { get; }
         bool Contains(params StatType[] type);
-        bool TryGetStat(StatType type, out IStat stat);
+        bool TryGetStat(StatType type, out Stat stat);
     }
 }

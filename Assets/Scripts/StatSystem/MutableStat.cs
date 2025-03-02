@@ -5,7 +5,7 @@ namespace StatSystem
     /// <summary>
     /// A Stat but with mutable properties, except for Type and Precision. Can be converted back to an immutable Stat. 
     /// </summary>
-    public class MutableStat : IStat
+    public class MutableStat
     {
         private float _value;
         private float? _min;
@@ -80,7 +80,7 @@ namespace StatSystem
         /// <summary>
         /// Converts a Stat into a ModifiableStat class. 
         /// </summary>
-        public MutableStat(IStat stat)
+        public MutableStat(Stat stat)
         {
             Type = stat.Type;
             Min = stat.Min;

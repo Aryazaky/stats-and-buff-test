@@ -5,49 +5,42 @@ using StatSystem.Collections.Generic;
 
 namespace StatSystem.Collections
 {
-    public class StatCollection : IStatCollection<MutableStat>
+    public class StatCollection : IEnumerable<MutableStat>
     {
-        private StatCollectionStruct<MutableStat> _statCollection;
+        private readonly Dictionary<StatType, MutableStat> _stats;
 
-        public StatCollection(IEnumerable<IStat> stats)
-        {
-            _statCollection = new StatCollectionStruct<MutableStat>(stats.Select(stat => new MutableStat(stat)));
-        }
+        public StatCollection(params Stat[] stats) => _stats = stats.Select(stat => new MutableStat(stat)).ToDictionary(stat => stat.Type);
 
-        public StatCollection(params IStat[] stats)
-        {
-            _statCollection = new StatCollectionStruct<MutableStat>(stats.Select(stat => new MutableStat(stat)));
-        }
+        public StatCollection(IEnumerable<Stat> stats) => _stats = stats.Select(stat => new MutableStat(stat)).ToDictionary(stat => stat.Type);
 
-        public StatCollection(IStatCollection stats)
-        {
-            var mutableStats = stats.Cast<IStat>().Select(stat => new MutableStat(stat));
-            _statCollection = new StatCollectionStruct<MutableStat>(mutableStats);
-        }
-        
         public MutableStat this[StatType type]
         {
-            get => _statCollection[type];
-            set => _statCollection[type] = value.ConvertTo<MutableStat>();
+            get => _stats[type];
+            set => _stats[type] = value;
         }
 
-        public IEnumerable<StatType> Types => _statCollection.Types;
-
-        public bool Contains(params StatType[] type) => _statCollection.Contains(type);
-        public bool TryGetStat(StatType type, out MutableStat stat) => _statCollection.TryGetStat(type, out stat);
-
-        public static implicit operator StatCollectionStruct<Stat>(StatCollection wrapper)
+        public bool Contains(params StatType[] type)
         {
-            return new StatCollectionStruct<Stat>(wrapper._statCollection.Select(stat => (Stat)stat));
+            var s = _stats;
+            return type.All(t => s.ContainsKey(t));
         }
 
-        public IEnumerator<MutableStat> GetEnumerator() => _statCollection.GetEnumerator();
+        public bool TryGetStat(StatType type, out MutableStat stat) => _stats.TryGetValue(type, out stat);
 
-        IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)_statCollection).GetEnumerator();
+        public IEnumerable<StatType> Types => _stats.Keys;
+
+        public IEnumerator<MutableStat> GetEnumerator() => _stats.Values.GetEnumerator();
         
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
         public override string ToString()
         {
-            return $"StatCollection: [{string.Join(", ", _statCollection)}]";
+            return string.Join(", ", _stats.Values);
+        }
+        
+        public static implicit operator StatCollectionStruct(StatCollection statCollection)
+        {
+            return new StatCollectionStruct(statCollection.Select(stat => new Stat(stat.Type, stat.Value, stat.Min, stat.Max, stat.Precision)));
         }
     }
 }
