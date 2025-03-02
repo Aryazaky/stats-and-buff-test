@@ -2,7 +2,6 @@ using System.Linq;
 using ConcreteClasses.Modifiers;
 using StatSystem;
 using StatSystem.Collections;
-using StatSystem.Collections.Generic;
 using StatSystem.Modifiers;
 using UnityEngine;
 

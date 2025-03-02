@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using StatSystem.Collections.Generic;
 using StatSystem.Modifiers;
 
 namespace StatSystem.Collections
