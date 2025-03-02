@@ -17,11 +17,7 @@ namespace StatSystem
         public float Value
         {
             get => _value;
-            set {
-                value = _max.HasValue ? MathF.Min(_max.Value, value) : value;
-                value = _min.HasValue ? MathF.Max(_min.Value, value) : value;
-                _value = MathF.Round(value, _precision);
-            }
+            set => _value = ValidateValue(value);
         }
 
         public float? Min
@@ -35,7 +31,11 @@ namespace StatSystem
                     {
                         throw new Exception($"Min value ({value}) cannot be more than Max value ({_max}).");
                     }
-                    else _min = value;
+                    else
+                    {
+                        _min = value;
+                        _value = ValidateValue(_value);
+                    }
                 }
                 else
                 {
@@ -53,9 +53,13 @@ namespace StatSystem
                 {
                     if (value < _min)
                     {
-                        throw new Exception($"Max value ({value}) cannot be more than Min value ({_min}).");
+                        throw new Exception($"Max value ({value}) cannot be less than Min value ({_min}).");
                     }
-                    else _max = value;
+                    else
+                    {
+                        _max = value;
+                        _value = ValidateValue(_value);
+                    }
                 }
                 else
                 {
@@ -74,6 +78,7 @@ namespace StatSystem
                     throw new Exception($"Decimal places precision ({value}) cannot be negative.");
                 }
                 _precision = value;
+                Value = Value;
             }
         }
 
@@ -98,24 +103,38 @@ namespace StatSystem
             Value = value;
         }
 
+        private float ValidateValue(float value)
+        {
+            value = _max.HasValue ? MathF.Min(_max.Value, value) : value;
+            value = _min.HasValue ? MathF.Max(_min.Value, value) : value;
+            return MathF.Round(value, _precision);
+        }
+
+        public MutableStat Clone()
+        {
+            return new MutableStat(Type, _value, _min, _max, _precision);
+        }
+
         public static implicit operator Stat(MutableStat stat)
         {
             return new Stat(type: stat.Type, value: stat.Value, min: stat.Min, max: stat.Max, precision: stat.Precision);
         }
         
-        private MutableStat PerformOperation(Stat other, Func<float, float, float> operation)
+        private MutableStat PerformOperation(MutableStat other, Func<float, float, float> operation)
         {
             if (Type != other.Type)
                 throw new InvalidOperationException($"Cannot operate on Stats of different types: {Type} and {other.Type}");
 
-            Value = operation(Value, other.Value);
-            return this;
+            var temp = Clone();
+            temp.Value = operation(Value, other.Value);
+            return temp;
         }
 
         private MutableStat PerformOperation(float value, Func<float, float, float> operation)
         {
-            Value = operation(Value, value);
-            return this;
+            var temp = Clone();
+            temp.Value = operation(Value, value);
+            return temp;
         }
         
         public static MutableStat operator +(MutableStat a, MutableStat b) => a.PerformOperation(b, (x, y) => x + y);

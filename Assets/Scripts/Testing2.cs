@@ -26,6 +26,7 @@ public class Testing2 : MonoBehaviour
             );
         
         _base.Mediator.AddModifier(hpRegenStatus);
+        Debug.Log($"init: {_base}");
         _base[StatType.Health] -= 5;
         Debug.Log($"before: {_base}");
         _base.Update(_worldContexts);
@@ -37,7 +38,10 @@ public class Testing2 : MonoBehaviour
         _base.Update(_worldContexts);
         Debug.Log($"update4: {_base}");
         _base.Update(_worldContexts);
-        Debug.Log($"update5: {_base}");
+        _base[StatType.Health] -= 5;
+        Debug.Log($"update5-5: {_base}");
+        _base.Update(_worldContexts);
+        Debug.Log($"update6: {_base}");
     }
 }
 
@@ -77,47 +81,10 @@ public static class StatModifierOperations
 {
     public static void Regen(Modifier.Contexts contexts)
     {
-        var stats = contexts.Query.TemporaryStats;
-        var statsRef = contexts.Query.ReferenceStats;
+        var temporaryStats = contexts.Query.TemporaryStats;
+        var referenceStats = contexts.Query.ReferenceStats;
 
-        if (stats.TryGetStat(StatType.Health, out var hp))
-        {
-            hp.Value += 10;
-            Debug.Log("Temp:" +stats);
-        }
-
-        statsRef[StatType.Health] += statsRef[StatType.HealthRegen].Value;
-
-        Debug.Log("Ref:"+statsRef);
-    }
-    
-    public static void ExampleOperations(Modifier.Contexts contexts)
-    {
-        var stats = contexts.Query.TemporaryStats;
-        var statsRef = contexts.Query.ReferenceStats;
-        foreach (var type in contexts.Query.Types)
-        {
-            // Uncomment one of these to try out their effect
-            
-            // How to: Temporary stat change, offset by 1
-            // stats[type].Value += 1;
-            
-            // How to: Temporary stat change, offset by how many times this effect has been invoked
-            // stats[type].Value += 1 + contexts.ModifierMetadata.InvokedCount;
-            
-            // How to: Temporary stat change, set to 1
-            // stats[type].Value = 1;
-            
-            // How to: Permanently change the stats by replacing the stats in the ref
-            // statsRef[type] = statsRef[type].SetValue(1);
-            
-            // How to: Permanently change the stats, by offset
-
-            if (statsRef[type] is MutableStat mutableStat)
-            {
-                mutableStat.Value += 1;
-                Debug.Log(mutableStat);
-            }
-        }
+        temporaryStats[StatType.Health].Max += 10;
+        referenceStats[StatType.Health] += referenceStats[StatType.HealthRegen].Value;
     }
 }

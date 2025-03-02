@@ -36,8 +36,8 @@ namespace StatSystem.Collections
             get => _modified[type];
             set
             {
-                var prev = _modified[type];
-                var diff = value.Value - prev.Value;
+                var prev = _modified[type].Value;
+                var diff = value.Value - prev;
                 _modified[type] = value;
                 _base[type] += diff;
             }
