@@ -31,19 +31,16 @@ namespace StatSystem.Collections
 
         public IEnumerable<StatType> Types => _base.Types;
 
-        public StatCollection Base
-        {
-            get
-            {
-                IsDirty = true;
-                return _base;
-            }
-        }
-
         public MutableStat this[StatType type]
         {
             get => _modified[type];
-            set => _modified[type] = value;
+            set
+            {
+                var prev = _modified[type];
+                var diff = value.Value - prev.Value;
+                _modified[type] = value;
+                _base[type] += diff;
+            }
         }
 
         public void Bake()

@@ -87,14 +87,6 @@ public static class StatModifierOperations
         }
 
         statsRef[StatType.Health] += statsRef[StatType.HealthRegen].Value;
-        
-        // if (statsRef is Stats s && s.Contains(StatType.Health, StatType.HealthRegen))
-        // {
-        //     Debug.Log(s[StatType.Health]);
-        //     s[StatType.Health] += s[StatType.HealthRegen].Value;
-        //     s.Bake();
-        //     Debug.Log(s);
-        // }
 
         Debug.Log("Ref:"+statsRef);
     }
