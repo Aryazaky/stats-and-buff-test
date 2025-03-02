@@ -5,8 +5,8 @@ namespace StatSystem.Collections
 {
     public interface IQuery
     {
-        public IStatCollection Stats { get; }
-        public IIndexer BaseStats { get; }
+        public StatCollection TemporaryStats { get; }
+        public IIndexer ReferenceStats { get; }
         IEnumerable<StatType> Types { get; }
         IReadOnlyWorldContexts WorldContexts { get; }
     }

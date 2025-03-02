@@ -108,12 +108,14 @@ namespace StatSystem
             if (Type != other.Type)
                 throw new InvalidOperationException($"Cannot operate on Stats of different types: {Type} and {other.Type}");
 
-            return new MutableStat(Type, operation(Value, other.Value), Min, Max, Precision);
+            Value = operation(Value, other.Value);
+            return this;
         }
 
         private MutableStat PerformOperation(float value, Func<float, float, float> operation)
         {
-            return new MutableStat(Type, operation(Value, value), Min, Max, Precision);
+            Value = operation(Value, value);
+            return this;
         }
         
         public static MutableStat operator +(MutableStat a, MutableStat b) => a.PerformOperation(b, (x, y) => x + y);
@@ -121,11 +123,11 @@ namespace StatSystem
         public static MutableStat operator +(MutableStat stat, float value) => stat.PerformOperation(value, (x, y) => x + y);
         public static MutableStat operator +(float value, MutableStat stat) => stat + value;
         public static MutableStat operator -(MutableStat stat, float value) => stat.PerformOperation(value, (x, y) => x - y);
-        public static MutableStat operator -(float value, MutableStat stat) => new MutableStat(stat.Type, value - stat.Value, stat.Min, stat.Max, stat.Precision);
+        public static MutableStat operator -(float value, MutableStat stat) => stat.PerformOperation(value, (x, y) => y - x);
         public static MutableStat operator *(MutableStat stat, float value) => stat.PerformOperation(value, (x, y) => x * y);
         public static MutableStat operator *(float value, MutableStat stat) => stat * value;
         public static MutableStat operator /(MutableStat stat, float value) => stat.PerformOperation(value, (x, y) => x / y);
-        public static MutableStat operator /(float value, MutableStat stat) => new MutableStat(stat.Type, value / stat.Value, stat.Min, stat.Max, stat.Precision);
+        public static MutableStat operator /(float value, MutableStat stat) => stat.PerformOperation(value, (x, y) => y / x);
 
         public override string ToString()
         {

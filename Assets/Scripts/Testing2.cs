@@ -8,17 +8,17 @@ using UnityEngine;
 
 public class Testing2 : MonoBehaviour
 {
-    private Stats<MutableStat> _base;
+    private Stats _base;
     private WorldContexts _worldContexts;
     void Start()
     {
         _worldContexts = new WorldContexts();
         
-        var hp = new MutableStat(StatType.Health, 10, 0, 100);
-        var hpRegen = new MutableStat(StatType.HealthRegen, 2);
-        var strength = new MutableStat(StatType.Strength, 5);
+        var hp = new Stat(StatType.Health, 10, 0, 100);
+        var hpRegen = new Stat(StatType.HealthRegen, 2);
+        var strength = new Stat(StatType.Strength, 5);
 
-        _base = new Stats<MutableStat>(hp, hpRegen, strength);
+        _base = new Stats(hp, hpRegen, strength);
 
         var hpRegenStatus = new StatModifier(
             StatType.Health, 
@@ -57,7 +57,7 @@ public static class StatModifierActivationConditions
     public static bool OncePerSecondActivationAsLongAsQueriedStatsAreLessThanMaxElseEndInstantly(Modifier.Contexts contexts, Modifier.IExpireTrigger trigger)
     {
         var query = contexts.Query;
-        var stats = query.Stats;
+        var stats = query.TemporaryStats;
         var hasAtLeastOneSecondPassed = contexts.ModifierMetadata.LastInvokeTime > 1;
         var allQueriedStatsAreLessThanMax = query.Types.All(type => stats[type].Value < (stats[type].Max ?? float.MaxValue)); // query.Types is guaranteed to be types available in the stats. 
         var result = allQueriedStatsAreLessThanMax && hasAtLeastOneSecondPassed;
@@ -69,19 +69,30 @@ public static class StatModifierOperations
 {
     public static void Regen(Modifier.Contexts contexts)
     {
-        var stats = contexts.Query.Stats;
-        var statsRef = contexts.Query.BaseStats;
-        if (statsRef is Stats<MutableStat> s && s.Contains(StatType.Health, StatType.HealthRegen))
+        var stats = contexts.Query.TemporaryStats;
+        var statsRef = contexts.Query.ReferenceStats;
+
+        if (stats.TryGetStat(StatType.Health, out var hp))
         {
+            hp.Value += 10;
+            Debug.Log("Temp:" +stats);
+        }
+        
+        if (statsRef is Stats s && s.Contains(StatType.Health, StatType.HealthRegen))
+        {
+            Debug.Log(s[StatType.Health]);
             s[StatType.Health] += s[StatType.HealthRegen].Value;
+            s.Bake();
             Debug.Log(s);
         }
+
+        Debug.Log(statsRef);
     }
     
     public static void ExampleOperations(Modifier.Contexts contexts)
     {
-        var stats = contexts.Query.Stats;
-        var statsRef = contexts.Query.BaseStats;
+        var stats = contexts.Query.TemporaryStats;
+        var statsRef = contexts.Query.ReferenceStats;
         foreach (var type in contexts.Query.Types)
         {
             // Uncomment one of these to try out their effect

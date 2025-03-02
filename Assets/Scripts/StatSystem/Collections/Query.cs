@@ -8,8 +8,8 @@ namespace StatSystem.Collections
     /// A class with properties that can be viewed or freely be changed while it undergone a journey through multiple modifiers. 
     public class Query : IQuery
     {
-        public IStatCollection Stats { get; }
-        public IIndexer BaseStats { get; }
+        public StatCollection TemporaryStats { get; }
+        public IIndexer ReferenceStats { get; }
         public IEnumerable<StatType> Types { get; }
         public IReadOnlyWorldContexts WorldContexts { get; }
 
@@ -17,8 +17,8 @@ namespace StatSystem.Collections
         {
             WorldContexts = worldContexts;
             Types = types;
-            Stats = new StatCollection(stats);
-            BaseStats = stats;
+            TemporaryStats = new StatCollection(stats);
+            ReferenceStats = stats;
 
             if (types.Any(type => !stats.Contains(type)))
             {

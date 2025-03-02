@@ -51,7 +51,13 @@ namespace StatSystem.Collections.Generic
             set => this[type] = value.ConvertTo<T>();
         }
 
-        public void Bake() => _base = _modified;
+        public void Bake()
+        {
+            foreach (var type in _base.Types.ToArray())
+            {
+                _base[type] = _modified[type];
+            }
+        }
         
         public void Update(IReadOnlyWorldContexts worldContexts, params StatType[] types)
         {
@@ -66,9 +72,9 @@ namespace StatSystem.Collections.Generic
 
         private T PerformQuery(IReadOnlyWorldContexts worldContexts, StatType type)
         {
-            var query = new Query<T>(this, worldContexts, type);
+            var query = new Query(this, worldContexts, type);
             Mediator.PerformQuery(query);
-            var queryStat = query.Stats[type];
+            var queryStat = query.TemporaryStats[type];
             if (queryStat is T stat)
             {
                 return stat;
@@ -81,9 +87,9 @@ namespace StatSystem.Collections.Generic
 
         private IStatCollection<T> PerformQuery(IReadOnlyWorldContexts worldContexts)
         {
-            var query = new Query<T>(this, worldContexts);
+            var query = new Query(this, worldContexts);
             Mediator.PerformQuery(query);
-            return new StatCollectionStruct<T>(query.Stats.Cast<T>());
+            return new StatCollectionStruct<T>(query.TemporaryStats.Cast<T>());
         }
         
         public bool Contains(params StatType[] type) => _base.Contains(type);
