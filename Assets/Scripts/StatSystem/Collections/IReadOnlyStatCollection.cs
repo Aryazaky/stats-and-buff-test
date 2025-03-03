@@ -6,6 +6,5 @@ namespace StatSystem.Collections
     {
         IEnumerable<StatType> Types { get; }
         bool Contains(params StatType[] type);
-        bool TryGetStat(StatType type, out Stat stat);
     }
 }

@@ -6,11 +6,10 @@ using StatSystem.Modifiers;
 
 namespace StatSystem.Collections
 {
-    [Serializable]
     public class Stats : IEnumerable<MutableStat>
     {
-        private StatCollection _base;
-        private StatCollection _modified;
+        private readonly StatCollection _base;
+        private readonly StatCollection _modified;
 
         public Stats(params Stat[] stats)
         {
@@ -55,9 +54,9 @@ namespace StatSystem.Collections
         {
             foreach (var tickable in Mediator.OfType<ITickable>()) tickable.Tick();
             var temp = PerformQuery(worldContexts);
-            if (!types.Any())
+            if (!types.Any()) foreach (var stat in temp)
             {
-                _modified = temp;
+                _modified[stat.Type] = stat;
             }
             else foreach (var type in types)
             {
@@ -86,6 +85,5 @@ namespace StatSystem.Collections
         {
             return _modified.ToString();
         }
-
     }
 }

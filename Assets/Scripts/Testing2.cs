@@ -1,13 +1,13 @@
-using System.Linq;
-using ConcreteClasses.Modifiers;
 using StatSystem;
 using StatSystem.Collections;
 using StatSystem.Modifiers;
+using StatSystem.UnityAdapter;
 using UnityEngine;
 
 public class Testing2 : MonoBehaviour
 {
     private Stats _base;
+    public StatWrapper StatWrapper = new StatWrapper(new Stat(StatType.AttackSpeed, 25));
     private WorldContexts _worldContexts;
     void Start()
     {
