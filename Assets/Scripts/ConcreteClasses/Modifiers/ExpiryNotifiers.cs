@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
-using StatSystem;
 using StatSystem.Modifiers;
+using UnityEngine;
 
-namespace StatSystem.Concrete_Classes.Expiry_Notifiers
+namespace ConcreteClasses.Modifiers
 {
     public class InvokeLimitExpiryNotifier : Modifier.IExpiryNotifier
     {
@@ -40,7 +39,7 @@ namespace StatSystem.Concrete_Classes.Expiry_Notifiers
 
         private void CheckLimit(Modifier modifier)
         {
-            if (modifier.InvokedCount >= _invokeLimit)
+            if (modifier is ITickableMetadata tickableMetadata && tickableMetadata.TotalTicksElapsed >= _invokeLimit)
             {
                 modifier.Dispose();
             }
@@ -88,7 +87,7 @@ namespace StatSystem.Concrete_Classes.Expiry_Notifiers
 
         private void CheckLimit(Modifier modifier)
         {
-            if (Time.time - modifier.CreatedTime >= _timeLimit)
+            if (Time.time - modifier.Age >= _timeLimit)
             {
                 modifier.Dispose();
             }

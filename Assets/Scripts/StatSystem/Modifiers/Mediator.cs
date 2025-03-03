@@ -1,11 +1,12 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using StatSystem.Collections;
 
 namespace StatSystem.Modifiers
 {
-    public class Mediator
+    public class Mediator : IEnumerable<Modifier>
     {
         private readonly Action<Modifier> _onModifierAdded;
         private readonly Action<Modifier> _onModifierRemoved;
@@ -50,5 +51,9 @@ namespace StatSystem.Modifiers
                 modifier.Dispose();
             }
         }
+
+        public IEnumerator<Modifier> GetEnumerator() => _modifiers.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)_modifiers).GetEnumerator();
     }
 }

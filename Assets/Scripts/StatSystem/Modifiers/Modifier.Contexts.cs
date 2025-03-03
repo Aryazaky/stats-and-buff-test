@@ -7,12 +7,12 @@ namespace StatSystem.Modifiers
         public readonly struct Contexts
         {
             public readonly IQuery Query;
-            public readonly Metadata ModifierMetadata;
+            public readonly IModifier ModifierMetadata;
 
             public Contexts(IQuery query, Modifier modifier)
             {
                 Query = query;
-                ModifierMetadata = new Metadata(modifier);
+                ModifierMetadata = modifier.ExtractMetadata();
             }
         }
     }

@@ -53,6 +53,7 @@ namespace StatSystem.Collections
         
         public void Update(IReadOnlyWorldContexts worldContexts, params StatType[] types)
         {
+            foreach (var tickable in Mediator.OfType<ITickable>()) tickable.Tick();
             var temp = PerformQuery(worldContexts);
             if (!types.Any())
             {
@@ -70,7 +71,7 @@ namespace StatSystem.Collections
         {
             var query = new Query(_base, worldContexts, _base.Types.ToArray());
             Mediator.PerformQuery(query);
-            return query.TemporaryStats;
+            return query.DisplayedStats;
         }
         
         public bool Contains(params StatType[] type) => _base.Contains(type);

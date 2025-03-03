@@ -2,7 +2,7 @@ namespace StatSystem.Modifiers
 {
     public abstract partial class Modifier
     {
-        public readonly struct Metadata : IModifier
+        public readonly struct Metadata : IModifier, IAgeMetadata
         {
             private readonly Modifier _modifier;
             public Metadata(Modifier modifier)
@@ -10,9 +10,7 @@ namespace StatSystem.Modifiers
                 _modifier = modifier;
             }
 
-            public float LastInvokeTime => _modifier.LastInvokeTime;
-            public float CreatedTime => _modifier.CreatedTime;
-            public int InvokedCount => _modifier.InvokedCount;
+            public float Age => _modifier.Age;
             public int Priority => _modifier.Priority;
         }
     }

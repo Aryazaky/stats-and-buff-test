@@ -4,8 +4,8 @@ namespace StatSystem.Collections
 {
     public interface IQuery
     {
-        public StatCollection TemporaryStats { get; }
-        public StatCollection ReferenceStats { get; }
+        public StatCollection DisplayedStats { get; }
+        public StatCollection BaseStats { get; }
         IEnumerable<StatType> Types { get; }
         IReadOnlyWorldContexts WorldContexts { get; }
     }

@@ -49,7 +49,21 @@ public static class StatModifierActivationConditions
 {
     public static bool InvokeOnce(Modifier.Contexts contexts, Modifier.IExpireTrigger trigger)
     {
-        return contexts.ModifierMetadata.InvokedCount < 3;
+        if (contexts.ModifierMetadata is ITickableMetadata tickableMetadata)
+        {
+            // return tickableMetadata.TotalTicksElapsed < 3; // not expiring them will cause them to stay active forever, even if the effects does not proc
+            
+            // The recommended way:
+            var allow = tickableMetadata.TotalTicksElapsed < 3;
+            if (!allow)
+            {
+                trigger.Expire();
+            }
+
+            return allow;
+        }
+
+        return false;
     }
     
     public static bool AlwaysActive(Modifier.Contexts contexts, Modifier.IExpireTrigger trigger)
@@ -59,32 +73,107 @@ public static class StatModifierActivationConditions
     
     public static bool ActiveFor2Seconds(Modifier.Contexts contexts, Modifier.IExpireTrigger trigger)
     {
-        if (Time.time - contexts.ModifierMetadata.CreatedTime > 2)
+        if (contexts.ModifierMetadata is IAgeMetadata { Age: > 2 })
         {
             trigger.Expire();
         }
         return true;
     }
-    
-    public static bool OncePerSecondActivationAsLongAsQueriedStatsAreLessThanMaxElseEndInstantly(Modifier.Contexts contexts, Modifier.IExpireTrigger trigger)
-    {
-        var query = contexts.Query;
-        var stats = query.TemporaryStats;
-        var hasAtLeastOneSecondPassed = contexts.ModifierMetadata.LastInvokeTime > 1;
-        var allQueriedStatsAreLessThanMax = query.Types.All(type => stats[type].Value < (stats[type].Max ?? float.MaxValue)); // query.Types is guaranteed to be types available in the stats. 
-        var result = allQueriedStatsAreLessThanMax && hasAtLeastOneSecondPassed;
-        return result;
-    }
 }
 
 public static class StatModifierOperations
 {
+    /// <summary>
+    /// Regenerates health based on the Health Regen stat. 
+    /// This effect triggers on each tick.
+    /// </summary>
     public static void Regen(Modifier.Contexts contexts)
     {
-        var temporaryStats = contexts.Query.TemporaryStats;
-        var referenceStats = contexts.Query.ReferenceStats;
+        var displayedStats = contexts.Query.DisplayedStats; // Temporary stats (used for displaying modified values)
+        var baseStats = contexts.Query.BaseStats; // Permanent stats (updated across ticks)
 
-        temporaryStats[StatType.Health].Max += 10;
-        referenceStats[StatType.Health] += referenceStats[StatType.HealthRegen].Value;
+        if (contexts.ModifierMetadata is ITickableMetadata { HasUnprocessedTick: true } tickableMetadata)
+        {
+            var regenValue = baseStats[StatType.HealthRegen].Value;
+
+            // Update both reference and temporary stats for lasting effects
+            baseStats[StatType.Health] += regenValue;
+            displayedStats[StatType.Health] += regenValue;
+
+            tickableMetadata.MarkTickProcessed(); // Prevents multiple applications within the same tick
+        }
+    }
+
+    /// <summary>
+    /// Applies a temporary Strength buff (+5 Strength per tick).
+    /// This buff does NOT modify the base stats, only affects calculations.
+    /// </summary>
+    public static void TemporaryStrengthBuff(Modifier.Contexts contexts)
+    {
+        var displayedStats = contexts.Query.DisplayedStats;
+
+        // Only modifying queriedStats means this buff does NOT persist between ticks.
+        displayedStats[StatType.Strength] += 5;
+    }
+
+    /// <summary>
+    /// Applies a stacking Strength buff (+1 per tick) that permanently increases Strength.
+    /// </summary>
+    public static void StackingStrengthBuff(Modifier.Contexts contexts)
+    {
+        var displayedStats = contexts.Query.DisplayedStats;
+        var baseStats = contexts.Query.BaseStats;
+
+        if (contexts.ModifierMetadata is ITickableMetadata { HasUnprocessedTick: true } tickableMetadata)
+        {
+            baseStats[StatType.Strength] += 1; // Permanently modifies Strength
+            displayedStats[StatType.Strength] += 1; // Ensures immediate visual feedback
+
+            tickableMetadata.MarkTickProcessed();
+        }
+    }
+
+    /// <summary>
+    /// Applies a temporary debuff that reduces Strength by 2 while active.
+    /// This does NOT persist beyond a single query.
+    /// </summary>
+    public static void TemporaryStrengthDebuff(Modifier.Contexts contexts)
+    {
+        var displayedStats = contexts.Query.DisplayedStats;
+
+        // This only affects displayed values; it does NOT persist after removal
+        displayedStats[StatType.Strength] -= 2;
+    }
+
+    /// <summary>
+    /// Applies a burn effect that deals damage over time (-3 HP per tick).
+    /// This effect modifies both reference and temporary stats for consistency.
+    /// </summary>
+    public static void Burn(Modifier.Contexts contexts)
+    {
+        var displayedStats = contexts.Query.DisplayedStats;
+        var baseStats = contexts.Query.BaseStats;
+
+        if (contexts.ModifierMetadata is ITickableMetadata { HasUnprocessedTick: true } tickableMetadata)
+        {
+            var burnDamage = 3;
+
+            baseStats[StatType.Health] -= burnDamage;
+            displayedStats[StatType.Health] -= burnDamage;
+
+            tickableMetadata.MarkTickProcessed();
+        }
+    }
+
+    /// <summary>
+    /// Applies a temporary Max HP buff (+20 Max HP while active).
+    /// This effect only modifies temporary stats and does not persist after removal.
+    /// </summary>
+    public static void TemporaryMaxHPBuff(Modifier.Contexts contexts)
+    {
+        var displayedStats = contexts.Query.DisplayedStats;
+
+        // Only modifies temporary stats, meaning it disappears after effect duration
+        displayedStats[StatType.Health].Max += 20;
     }
 }

@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Diagnostics;
 using StatSystem.Collections;
 using UnityEngine;
 
 namespace StatSystem.Modifiers
 {
-    public abstract partial class Modifier : IDisposable, Modifier.IModifier
+    public abstract partial class Modifier : IDisposable, Modifier.IModifier, IAgeMetadata
     {
         public delegate void Operation(Contexts contexts);
         public delegate bool ActivePrerequisite(Contexts contexts, IExpireTrigger trigger);
@@ -17,20 +18,17 @@ namespace StatSystem.Modifiers
         private readonly ActivePrerequisite _activePrerequisite;
         private bool _isExpired;
         private bool _operationOnExpireTriggered;
+        private readonly float _createdTime;
 
         public Modifier(Operation operation, int priority = 0, ActivePrerequisite activePrerequisite = null)
         {
             Priority = priority;
             _operation = operation;
             _activePrerequisite = activePrerequisite ?? ((_,_) => true);
-            CreatedTime = Time.time;
+            _createdTime = Time.time;
         }
 
-        public float LastInvokeTime { get; private set; }
-        
-        public float CreatedTime { get; }
-
-        public int InvokedCount { get; private set; }
+        public float Age => Time.time - _createdTime;
 
         public int Priority { get; }
 
@@ -45,8 +43,6 @@ namespace StatSystem.Modifiers
                 if (_activePrerequisite(contexts, new ExpireTrigger(this)))
                 {
                     _operation(contexts);
-                    InvokedCount++;
-                    LastInvokeTime = Time.time;
                     OnInvoke?.Invoke(this);
                 }
                 else
@@ -54,6 +50,11 @@ namespace StatSystem.Modifiers
                     OnInvokeFail?.Invoke(this);
                 }
             }
+        }
+        
+        protected virtual IModifier ExtractMetadata()
+        {
+            return new Metadata(this);
         }
 
         public void Dispose()

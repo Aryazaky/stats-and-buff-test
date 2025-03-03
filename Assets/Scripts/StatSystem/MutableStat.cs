@@ -137,8 +137,6 @@ namespace StatSystem
             return temp;
         }
         
-        public static MutableStat operator +(MutableStat a, MutableStat b) => a.PerformOperation(b, (x, y) => x + y);
-        public static MutableStat operator -(MutableStat a, MutableStat b) => a.PerformOperation(b, (x, y) => x - y);
         public static MutableStat operator +(MutableStat stat, float value) => stat.PerformOperation(value, (x, y) => x + y);
         public static MutableStat operator +(float value, MutableStat stat) => stat + value;
         public static MutableStat operator -(MutableStat stat, float value) => stat.PerformOperation(value, (x, y) => x - y);
