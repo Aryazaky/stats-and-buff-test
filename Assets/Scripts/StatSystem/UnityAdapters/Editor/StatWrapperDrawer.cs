@@ -6,20 +6,28 @@ namespace StatSystem.UnityAdapters.Editor
     [CustomPropertyDrawer(typeof(StatWrapper))]
     public class StatWrapperDrawer : PropertyDrawer
     {
+        private const string TypePropName = "type";
+        private const string ValuePropName = "value";
+        private const string HasMinPropType = "hasMin";
+        private const string MinPropName = "min";
+        private const string HasMaxPropName = "hasMax";
+        private const string MaxPropName = "max";
+        private const string PrecisionPropName = "precision";
+
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             EditorGUI.BeginProperty(position, label, property);
             
-            SerializedProperty typeProp = property.FindPropertyRelative("type");
-            SerializedProperty valueProp = property.FindPropertyRelative("value");
+            SerializedProperty typeProp = property.FindPropertyRelative(TypePropName);
+            SerializedProperty valueProp = property.FindPropertyRelative(ValuePropName);
 
-            SerializedProperty hasMinProp = property.FindPropertyRelative("hasMin");
-            SerializedProperty minProp = property.FindPropertyRelative("min");
+            SerializedProperty hasMinProp = property.FindPropertyRelative(HasMinPropType);
+            SerializedProperty minProp = property.FindPropertyRelative(MinPropName);
 
-            SerializedProperty hasMaxProp = property.FindPropertyRelative("hasMax");
-            SerializedProperty maxProp = property.FindPropertyRelative("max");
+            SerializedProperty hasMaxProp = property.FindPropertyRelative(HasMaxPropName);
+            SerializedProperty maxProp = property.FindPropertyRelative(MaxPropName);
 
-            SerializedProperty precisionProp = property.FindPropertyRelative("precision");
+            SerializedProperty precisionProp = property.FindPropertyRelative(PrecisionPropName);
             
             bool isDefault = typeProp.enumValueIndex == 0 
                              && valueProp.floatValue == 0f 
@@ -33,7 +41,6 @@ namespace StatSystem.UnityAdapters.Editor
             if (isDefault)
             {
                 EditorGUI.HelpBox(rect, "Default (Uninitialized?)", MessageType.Warning);
-    
                 rect.y += EditorGUIUtility.singleLineHeight + 5;
             }
 
@@ -82,11 +89,11 @@ namespace StatSystem.UnityAdapters.Editor
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            bool isDefault = property.FindPropertyRelative("type").enumValueIndex == 0 &&
-                             property.FindPropertyRelative("value").floatValue == 0f &&
-                             property.FindPropertyRelative("hasMin").boolValue == false &&
-                             property.FindPropertyRelative("hasMax").boolValue == false &&
-                             property.FindPropertyRelative("precision").intValue == 0;
+            bool isDefault = property.FindPropertyRelative(TypePropName).enumValueIndex == 0 &&
+                             property.FindPropertyRelative(ValuePropName).floatValue == 0f &&
+                             property.FindPropertyRelative(HasMinPropType).boolValue == false &&
+                             property.FindPropertyRelative(HasMaxPropName).boolValue == false &&
+                             property.FindPropertyRelative(PrecisionPropName).intValue == 0;
 
             // Base height for 5 fields
             float height = (EditorGUIUtility.singleLineHeight + 2) * 5;
