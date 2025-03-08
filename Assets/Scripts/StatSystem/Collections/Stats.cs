@@ -6,7 +6,7 @@ using StatSystem.Modifiers;
 
 namespace StatSystem.Collections
 {
-    public class Stats : IEnumerable<MutableStat>
+    public class Stats : IEnumerable<MutableStat>, IReadOnlyStatCollection, IMutableStatIndexer
     {
         private readonly StatCollection _base;
         private readonly StatCollection _modified;
@@ -27,20 +27,7 @@ namespace StatSystem.Collections
 
         public Mediator Mediator { get; }
         public bool IsDirty { get; private set; }
-
-        public IEnumerable<StatType> Types => _base.Types;
-
-        public MutableStat this[StatType type]
-        {
-            get => _modified[type];
-            set
-            {
-                var prev = _modified[type].Value;
-                var diff = value.Value - prev;
-                _modified[type] = value;
-                _base[type] += diff;
-            }
-        }
+        public StatCollectionStruct Snapshot() => _modified;
 
         public void Bake()
         {
@@ -71,6 +58,20 @@ namespace StatSystem.Collections
             var query = new Query(_base, worldContexts, _base.Types.ToArray());
             Mediator.PerformQuery(query);
             return query.DisplayedStats;
+        }
+
+        public IEnumerable<StatType> Types => _base.Types;
+
+        public MutableStat this[StatType type]
+        {
+            get => _modified[type];
+            set
+            {
+                var prev = _modified[type].Value;
+                var diff = value.Value - prev;
+                _modified[type] = value;
+                _base[type] += diff;
+            }
         }
         
         public bool Contains(params StatType[] type) => _base.Contains(type);

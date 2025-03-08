@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace StatSystem.Collections
 {
-    public class StatCollection : IEnumerable<MutableStat>, IReadOnlyStatCollection
+    public class StatCollection : IEnumerable<MutableStat>, IReadOnlyStatCollection, IMutableStatIndexer
     {
         private readonly Dictionary<StatType, MutableStat> _stats;
 

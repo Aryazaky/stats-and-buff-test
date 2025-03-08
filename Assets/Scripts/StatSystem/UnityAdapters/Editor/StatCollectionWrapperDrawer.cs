@@ -1,12 +1,10 @@
+using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
 namespace StatSystem.UnityAdapters.Editor
 {
-    using System.Collections.Generic;
-    using UnityEditor;
-    using UnityEngine;
-
     [CustomPropertyDrawer(typeof(StatCollectionWrapper))]
     public class StatCollectionWrapperDrawer : PropertyDrawer
     {
@@ -24,11 +22,20 @@ namespace StatSystem.UnityAdapters.Editor
             rect.height = _warningBoxHeight;
 
             // Detect duplicate StatType values
-            bool hasDuplicates = HasDuplicateStatTypes(statsProp);
+            bool hasDuplicates = HasDuplicateStatTypes(statsProp, out var index);
 
             if (hasDuplicates)
             {
-                EditorGUI.HelpBox(rect, "Duplicate StatType will be ignored!", MessageType.Warning);
+                if (Enum.IsDefined(typeof(StatType), index))
+                {
+                    var type = (StatType)index;
+                    EditorGUI.HelpBox(rect, $"Found multiple {type}s. Duplicates will be ignored!", MessageType.Warning);
+                }
+                else
+                {
+                    EditorGUI.HelpBox(rect, $"Found undefined duplicate! How did this happen?", MessageType.Error);
+                }
+                
                 rect.y += _warningBoxHeight + 5; // Add space for the warning box
             }
 
@@ -41,7 +48,7 @@ namespace StatSystem.UnityAdapters.Editor
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
             SerializedProperty statsProp = property.FindPropertyRelative(StatsPropName);
-            bool hasDuplicates = HasDuplicateStatTypes(statsProp);
+            bool hasDuplicates = HasDuplicateStatTypes(statsProp, out _);
 
             float height = EditorGUI.GetPropertyHeight(statsProp, true);
 
@@ -56,7 +63,7 @@ namespace StatSystem.UnityAdapters.Editor
         /// <summary>
         /// Checks if there are duplicate StatType values in the array.
         /// </summary>
-        private bool HasDuplicateStatTypes(SerializedProperty statsProp)
+        private bool HasDuplicateStatTypes(SerializedProperty statsProp, out int index)
         {
             HashSet<int> uniqueTypes = new HashSet<int>(); // Using int because enums are stored as int
 
@@ -66,15 +73,14 @@ namespace StatSystem.UnityAdapters.Editor
                 SerializedProperty typeProp = statElement.FindPropertyRelative(StatTypePropName);
 
                 if (typeProp == null) continue;
-
-                int statTypeValue = typeProp.enumValueIndex;
-
-                if (!uniqueTypes.Add(statTypeValue))
+                
+                if (!uniqueTypes.Add(typeProp.enumValueIndex))
                 {
+                    index = typeProp.enumValueIndex;
                     return true; // Found a duplicate
                 }
             }
-
+            index = -1;
             return false;
         }
     }
