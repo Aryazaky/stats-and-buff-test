@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Diagnostics;
 using StatSystem.Collections;
 using UnityEngine;
 
 namespace StatSystem.Modifiers
 {
-    public abstract partial class Modifier : IDisposable, Modifier.IModifier, IAgeMetadata
+    public partial class Modifier : IDisposable, Modifier.IModifierMetadata
     {
         public delegate void Operation(Contexts contexts);
         public delegate bool ActivePrerequisite(Contexts contexts, IExpireTrigger trigger);
@@ -52,7 +51,7 @@ namespace StatSystem.Modifiers
             }
         }
         
-        protected virtual IModifier ExtractMetadata()
+        protected virtual IModifierMetadata ExtractMetadata()
         {
             return new Metadata(this);
         }

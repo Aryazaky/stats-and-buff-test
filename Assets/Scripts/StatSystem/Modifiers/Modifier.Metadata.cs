@@ -1,8 +1,8 @@
 namespace StatSystem.Modifiers
 {
-    public abstract partial class Modifier
+    public partial class Modifier
     {
-        public readonly struct Metadata : IModifier, IAgeMetadata
+        public readonly struct Metadata : IModifierMetadata, IAgeMetadata
         {
             private readonly Modifier _modifier;
             public Metadata(Modifier modifier)
@@ -12,6 +12,7 @@ namespace StatSystem.Modifiers
 
             public float Age => _modifier.Age;
             public int Priority => _modifier.Priority;
+            public bool IsExpired => _modifier.IsExpired;
         }
     }
 }

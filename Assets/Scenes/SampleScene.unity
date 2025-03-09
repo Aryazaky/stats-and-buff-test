@@ -430,6 +430,8 @@ MonoBehaviour:
       hasMax: 0
       max: 0
       precision: 0
+  factory: {fileID: 11400000, guid: 5747f5b3aa8696a49be2c91cc9d96f43, type: 2}
+  modifiers: []
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

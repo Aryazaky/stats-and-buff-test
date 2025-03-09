@@ -1,8 +1,7 @@
 namespace StatSystem.UnityAdapters
 {
-    interface IWrapper<T>
+    interface IWrapper<T> : IWriteOnlyWrapper<T>
     {
-        void Update(T obj);
         T ToOriginal();
     }
 }

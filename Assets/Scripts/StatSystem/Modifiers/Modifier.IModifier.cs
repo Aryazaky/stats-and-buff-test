@@ -1,10 +1,11 @@
 namespace StatSystem.Modifiers
 {
-    public abstract partial class Modifier
+    public partial class Modifier
     {
-        public interface IModifier
+        public interface IModifierMetadata : IAgeMetadata
         {
-            public int Priority { get; }
+            int Priority { get; }
+            bool IsExpired { get; }
         }
     }
 }

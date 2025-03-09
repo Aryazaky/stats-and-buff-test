@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3bf90ba99c242938c166c4e47223896, type: 3}
+  m_Name: New Modifier Factory
+  m_EditorClassIdentifier: 
+  icon: {fileID: 0}
+  description: blahblah
+  priority: 0
+  prerequisiteFactory: {fileID: 11400000, guid: 65e31187b5f7b0245b3a2300cf18d5f5, type: 2}
+  operationFactory: {fileID: 11400000, guid: 56270be2e44c06442a16de7af3520a7f, type: 2}

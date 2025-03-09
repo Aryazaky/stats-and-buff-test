@@ -1,6 +1,6 @@
 namespace StatSystem.Modifiers
 {
-    public abstract partial class Modifier
+    public partial class Modifier
     {
         public interface IExpireTrigger
         {

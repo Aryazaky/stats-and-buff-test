@@ -2,12 +2,12 @@ using StatSystem.Collections;
 
 namespace StatSystem.Modifiers
 {
-    public abstract partial class Modifier
+    public partial class Modifier
     {
         public readonly struct Contexts
         {
             public readonly IQuery Query;
-            public readonly IModifier ModifierMetadata;
+            public readonly IModifierMetadata ModifierMetadata;
 
             public Contexts(IQuery query, Modifier modifier)
             {

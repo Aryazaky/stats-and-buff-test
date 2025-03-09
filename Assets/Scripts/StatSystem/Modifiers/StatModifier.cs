@@ -17,6 +17,8 @@ namespace StatSystem.Modifiers
         {
             _types = new[] { type };
         }
+        
+        public IEnumerable<StatType> Types => _types;
 
         public override void Handle(IQuery query)
         {
@@ -37,9 +39,9 @@ namespace StatSystem.Modifiers
         public float LastTickTime { get; private set; }
         public void MarkTickProcessed() => _lastProcessedTick = TotalTicksElapsed;
 
-        protected override IModifier ExtractMetadata()
+        protected override IModifierMetadata ExtractMetadata()
         {
-            return new StatMetadata(this);
+            return new StatModifierMetadata(this);
         }
     }
 }
