@@ -2,9 +2,9 @@ namespace StatSystem.Modifiers
 {
     public readonly struct StatModifierMetadata : Modifier.IModifierMetadata, ITickableMetadata
     {
-        private readonly StatModifier _modifier;
+        private readonly TickableModifier _modifier;
 
-        public StatModifierMetadata(StatModifier modifier)
+        public StatModifierMetadata(TickableModifier modifier)
         {
             _modifier = modifier;
         }

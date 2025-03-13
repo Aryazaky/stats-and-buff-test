@@ -34,6 +34,6 @@ namespace UnitSystem
             _stats = new Stats(statCollection.ToOriginal());
         }
 
-        public IMutableStatIndexer Stats => _stats;
+        public IMutableStatCollection Stats => _stats;
     }
 }

@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace StatSystem.Collections
 {
-    public struct StatCollectionStruct : IStatCollection, IEnumerable<Stat>
+    public readonly struct StatCollectionStruct : IStatCollection, IEnumerable<Stat>
     {
         private readonly Dictionary<StatType, Stat> _stats;
 

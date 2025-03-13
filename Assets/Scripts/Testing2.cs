@@ -20,8 +20,7 @@ public class Testing2 : MonoBehaviour
 
         _base = new Stats(hp, hpRegen, strength);
 
-        var hpRegenStatus = new StatModifier(
-            StatType.Health, 
+        var hpRegenStatus = new TickableModifier(
             activePrerequisite: StatModifierActivationConditions.InvokeOnce, 
             operation: StatModifierOperations.Regen
             );
@@ -90,15 +89,15 @@ public static class StatModifierOperations
     /// </summary>
     public static void Regen(Modifier.Contexts contexts)
     {
-        var displayedStats = contexts.Query.DisplayedStats; // Temporary stats (used for displaying modified values)
+        var displayedStats = contexts.Query.QueriedStats; // Temporary stats (used for displaying modified values)
         var baseStats = contexts.Query.BaseStats; // Permanent stats (updated across ticks)
 
         if (contexts.ModifierMetadata is ITickableMetadata { HasUnprocessedTick: true } tickableMetadata)
         {
-            var regenValue = baseStats[StatType.HealthRegen].Value;
+            var regenValue = baseStats[StatType.HealthRegen].Value; // Warning: it's unknown if the stats has a HealthRegen property. Use baseStats.TryGetStat(StatType.HealthRegen, out var stat) instead
 
             // Update both reference and temporary stats for lasting effects
-            baseStats[StatType.Health] += regenValue;
+            baseStats[StatType.Health] += regenValue; // Warning: same as the warning above. 
             displayedStats[StatType.Health] += regenValue;
 
             tickableMetadata.MarkTickProcessed(); // Prevents multiple applications within the same tick
@@ -111,7 +110,7 @@ public static class StatModifierOperations
     /// </summary>
     public static void TemporaryStrengthBuff(Modifier.Contexts contexts)
     {
-        var displayedStats = contexts.Query.DisplayedStats;
+        var displayedStats = contexts.Query.QueriedStats;
 
         // Only modifying queriedStats means this buff does NOT persist between ticks.
         displayedStats[StatType.Strength] += 5;
@@ -122,7 +121,7 @@ public static class StatModifierOperations
     /// </summary>
     public static void StackingStrengthBuff(Modifier.Contexts contexts)
     {
-        var displayedStats = contexts.Query.DisplayedStats;
+        var displayedStats = contexts.Query.QueriedStats;
         var baseStats = contexts.Query.BaseStats;
 
         if (contexts.ModifierMetadata is ITickableMetadata { HasUnprocessedTick: true } tickableMetadata)
@@ -140,7 +139,7 @@ public static class StatModifierOperations
     /// </summary>
     public static void TemporaryStrengthDebuff(Modifier.Contexts contexts)
     {
-        var displayedStats = contexts.Query.DisplayedStats;
+        var displayedStats = contexts.Query.QueriedStats;
 
         // This only affects displayed values; it does NOT persist after removal
         displayedStats[StatType.Strength] -= 2;
@@ -152,7 +151,7 @@ public static class StatModifierOperations
     /// </summary>
     public static void Burn(Modifier.Contexts contexts)
     {
-        var displayedStats = contexts.Query.DisplayedStats;
+        var displayedStats = contexts.Query.QueriedStats;
         var baseStats = contexts.Query.BaseStats;
 
         if (contexts.ModifierMetadata is ITickableMetadata { HasUnprocessedTick: true } tickableMetadata)
@@ -172,7 +171,7 @@ public static class StatModifierOperations
     /// </summary>
     public static void TemporaryMaxHPBuff(Modifier.Contexts contexts)
     {
-        var displayedStats = contexts.Query.DisplayedStats;
+        var displayedStats = contexts.Query.QueriedStats;
 
         // Only modifies temporary stats, meaning it disappears after effect duration
         displayedStats[StatType.Health].Max += 20;

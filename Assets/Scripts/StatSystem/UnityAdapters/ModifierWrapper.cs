@@ -14,8 +14,7 @@ namespace StatSystem.UnityAdapters
         [SerializeField] private int priority;
         [SerializeField] private bool isExpired;
         [SerializeField] private float age;
-        [SerializeField] private bool isStatModifier;
-        [SerializeField] private StatType[] statTypes;
+        [SerializeField] private bool hasTicks;
         [SerializeField] private int totalTicksElapsed;
 
         public ModifierWrapper((Modifier modifier, IAssetMetadata metadata) obj)
@@ -27,16 +26,14 @@ namespace StatSystem.UnityAdapters
             priority = modifier.Priority;
             isExpired = modifier.IsExpired;
             age = modifier.Age;
-            if (modifier is StatModifier statModifier)
+            if (modifier is TickableModifier statModifier)
             {
-                isStatModifier = true;
-                statTypes = statModifier.Types.ToArray();
+                hasTicks = true;
                 totalTicksElapsed = statModifier.TotalTicksElapsed;
             }
             else
             {
-                isStatModifier = false;
-                statTypes = Array.Empty<StatType>();
+                hasTicks = false;
                 totalTicksElapsed = 0;
             }
         }
@@ -49,16 +46,14 @@ namespace StatSystem.UnityAdapters
             priority = modifier.Priority;
             isExpired = modifier.IsExpired;
             age = modifier.Age;
-            if (modifier is StatModifier statModifier)
+            if (modifier is TickableModifier statModifier)
             {
-                isStatModifier = true;
-                statTypes = statModifier.Types.ToArray();
+                hasTicks = true;
                 totalTicksElapsed = statModifier.TotalTicksElapsed;
             }
             else
             {
-                isStatModifier = false;
-                statTypes = Array.Empty<StatType>();
+                hasTicks = false;
                 totalTicksElapsed = 0;
             }
         }
@@ -72,16 +67,14 @@ namespace StatSystem.UnityAdapters
             priority = modifier.Priority;
             isExpired = modifier.IsExpired;
             age = modifier.Age;
-            if (modifier is StatModifier statModifier)
+            if (modifier is TickableModifier statModifier)
             {
-                isStatModifier = true;
-                statTypes = statModifier.Types.ToArray();
+                hasTicks = true;
                 totalTicksElapsed = statModifier.TotalTicksElapsed;
             }
             else
             {
-                isStatModifier = false;
-                statTypes = Array.Empty<StatType>();
+                hasTicks = false;
                 totalTicksElapsed = 0;
             }
         }

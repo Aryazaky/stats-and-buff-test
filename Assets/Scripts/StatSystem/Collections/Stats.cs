@@ -5,7 +5,7 @@ using StatSystem.Modifiers;
 
 namespace StatSystem.Collections
 {
-    public class Stats : IEnumerable<MutableStat>, IReadOnlyStatCollection, IMutableStatIndexer
+    public class Stats : IEnumerable<MutableStat>, IReadOnlyStatCollection, IMutableStatCollection
     {
         private readonly StatCollection _base;
         private readonly StatCollection _modified;
@@ -36,17 +36,13 @@ namespace StatSystem.Collections
             }
         }
         
-        public void Update(IReadOnlyWorldContexts worldContexts, params StatType[] types)
+        public void Update(IReadOnlyWorldContexts worldContexts)
         {
             foreach (var tickable in Mediator.OfType<ITickable>()) tickable.Tick();
             var temp = PerformQuery(worldContexts);
-            if (!types.Any()) foreach (var stat in temp)
+            foreach (var stat in temp)
             {
                 _modified[stat.Type] = stat;
-            }
-            else foreach (var type in types)
-            {
-                _modified[type] = temp[type];
             }
 
             IsDirty = false;
@@ -54,9 +50,9 @@ namespace StatSystem.Collections
 
         private StatCollection PerformQuery(IReadOnlyWorldContexts worldContexts)
         {
-            var query = new Query(_base, worldContexts, _base.Types.ToArray());
+            var query = new Query(_base, worldContexts);
             Mediator.PerformQuery(query);
-            return query.DisplayedStats;
+            return query.QueriedStats;
         }
 
         public IEnumerable<StatType> Types => _base.Types;
