@@ -5,7 +5,7 @@ using StatSystem.Modifiers;
 
 namespace StatSystem.Collections
 {
-    public class Stats : IEnumerable<MutableStat>, IReadOnlyStatCollection, IMutableStatCollection
+    public class Stats : IEnumerable<MutableStat>, IMutableStatCollection
     {
         private readonly StatCollection _base;
         private readonly StatCollection _modified;

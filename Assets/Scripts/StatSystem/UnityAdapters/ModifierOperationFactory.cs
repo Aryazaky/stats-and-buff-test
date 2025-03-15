@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using StatSystem.Collections;
 using StatSystem.Modifiers;
 using UnityEngine;
@@ -6,30 +8,24 @@ namespace StatSystem.UnityAdapters
 {
     public abstract class ModifierOperationFactory : ScriptableObject
     {
-        protected struct ModifierOnTickOperationContext
+        protected class OnTickUpdateDetails
         {
-            public StatCollectionStruct BaseStats { get; }
-            public StatCollectionStruct DisplayedStats { get; }
-            public int CurrentTick { get; }
+            /// <summary>
+            /// These actions will be applied to both baseStats and queriedStats.
+            /// </summary>
+            public List<Action<IMutableStatCollection>> SynchronizedUpdates { get; }
+    
+            /// <summary>
+            /// These actions will be applied only to queriedStats.
+            /// </summary>
+            public List<Action<IMutableStatCollection>> NonSynchronizedUpdates { get; }
 
-            public ModifierOnTickOperationContext(StatCollectionStruct baseStats, StatCollectionStruct displayedStats, int currentTick)
+            public OnTickUpdateDetails(
+                List<Action<IMutableStatCollection>> synchronizedUpdates,
+                List<Action<IMutableStatCollection>> nonSynchronizedUpdates)
             {
-                BaseStats = baseStats;
-                DisplayedStats = displayedStats;
-                CurrentTick = currentTick;
-            }
-        }
-        protected struct ModifierOperationContext
-        {
-            public StatCollectionStruct BaseStats { get; }
-            public StatCollectionStruct DisplayedStats { get; }
-            public int CurrentTick { get; }
-
-            public ModifierOperationContext(StatCollectionStruct baseStats, StatCollectionStruct displayedStats, int currentTick)
-            {
-                BaseStats = baseStats;
-                DisplayedStats = displayedStats;
-                CurrentTick = currentTick;
+                SynchronizedUpdates = synchronizedUpdates ?? new List<Action<IMutableStatCollection>>();
+                NonSynchronizedUpdates = nonSynchronizedUpdates ?? new List<Action<IMutableStatCollection>>();
             }
         }
         
@@ -39,25 +35,42 @@ namespace StatSystem.UnityAdapters
         {
             var queriedStats = contexts.Query.QueriedStats;
             var baseStats = contexts.Query.BaseStats;
-
             var modifierMetadata = contexts.ModifierMetadata;
             var currentTick = modifierMetadata.TotalTicksElapsed;
+        
             if (modifierMetadata.HasUnprocessedTick)
             {
-                var statCollection = ComputeOnTickStatCollection(new ModifierOnTickOperationContext(baseStats, queriedStats, currentTick));
-                foreach (var type in statCollection.Types)
-                {
-                    baseStats[type] = new MutableStat(statCollection[type]);
-                    queriedStats[type] = new MutableStat(statCollection[type]);
-                }
+                ApplyOnTickStatChangesTemplate(currentTick, baseStats, queriedStats);
                 modifierMetadata.MarkTickProcessed();
             }
-        
-            Apply(queriedStats, currentTick);
+    
+            ApplyTemporaryStatChanges(currentTick, new ReadOnlyStatIndexer(baseStats), queriedStats);
         }
 
-        protected abstract StatCollectionStruct ComputeOnTickStatCollection(ModifierOnTickOperationContext context);
+        private void ApplyOnTickStatChangesTemplate(int currentTick, StatCollection baseStats, StatCollection queriedStats)
+        {
+            var updateDetails = CreateOnTickUpdate(currentTick, new ReadOnlyStatIndexer(baseStats), new ReadOnlyStatIndexer(queriedStats));
+        
+            // Apply synchronized updates to both collections.
+            foreach (var update in updateDetails.SynchronizedUpdates)
+            {
+                update(baseStats);
+                update(queriedStats);
+            }
+        
+            // Apply non-synchronized updates only to queriedStats.
+            foreach (var update in updateDetails.NonSynchronizedUpdates)
+            {
+                update(queriedStats);
+            }
+        }
 
-        protected abstract void Apply(IMutableStatCollection queriedStats, int currentTick);
+        /// <summary>
+        /// Subclasses provide the composite update details. 
+        /// They can use both baseStats and queriedStats to decide what to update.
+        /// </summary>
+        protected abstract OnTickUpdateDetails CreateOnTickUpdate(int currentTick, ReadOnlyStatIndexer baseStats, ReadOnlyStatIndexer queriedStats);
+
+        protected abstract void ApplyTemporaryStatChanges(int currentTick, ReadOnlyStatIndexer baseStats, IMutableStatCollection queriedStats);
     }
 }

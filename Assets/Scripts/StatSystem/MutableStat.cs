@@ -119,16 +119,6 @@ namespace StatSystem
         {
             return new Stat(type: stat.Type, value: stat.Value, min: stat.Min, max: stat.Max, precision: stat.Precision);
         }
-        
-        private MutableStat PerformOperation(MutableStat other, Func<float, float, float> operation)
-        {
-            if (Type != other.Type)
-                throw new InvalidOperationException($"Cannot operate on Stats of different types: {Type} and {other.Type}");
-
-            var temp = Clone();
-            temp.Value = operation(Value, other.Value);
-            return temp;
-        }
 
         private MutableStat PerformOperation(float value, Func<float, float, float> operation)
         {

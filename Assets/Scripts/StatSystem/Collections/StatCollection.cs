@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +12,14 @@ namespace StatSystem.Collections
         public StatCollection(params Stat[] stats) => _stats = stats.Select(stat => new MutableStat(stat)).ToDictionary(stat => stat.Type);
 
         public StatCollection(IEnumerable<Stat> stats) => _stats = stats.Select(stat => new MutableStat(stat)).ToDictionary(stat => stat.Type);
+        
+        public void SafeEdit(StatType type, Action<MutableStat> editAction)
+        {
+            if (_stats.TryGetValue(type, out var stat))
+            {
+                editAction(stat);
+            }
+        }
 
         public MutableStat this[StatType type]
         {
