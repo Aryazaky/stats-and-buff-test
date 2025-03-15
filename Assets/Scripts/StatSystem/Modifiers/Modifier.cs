@@ -18,6 +18,7 @@ namespace StatSystem.Modifiers
         private bool _isExpired;
         private bool _operationOnExpireTriggered;
         private readonly float _createdTime;
+        private int _lastProcessedTick = -1;
 
         public Modifier(Operation operation, int priority = 0, ActivePrerequisite activePrerequisite = null)
         {
@@ -50,10 +51,21 @@ namespace StatSystem.Modifiers
                 }
             }
         }
+
+        public void Tick()
+        {
+            TotalTicksElapsed++;
+            LastTickTime = Time.time;
+        }
+
+        public int TotalTicksElapsed { get; private set; }
+        public bool HasUnprocessedTick => TotalTicksElapsed > _lastProcessedTick;
+        public float LastTickTime { get; private set; }
+        public void MarkTickProcessed() => _lastProcessedTick = TotalTicksElapsed;
         
         protected virtual IModifierMetadata ExtractMetadata()
         {
-            return new Metadata(this);
+            return new ModifierMetadata(this);
         }
 
         public void Dispose()

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace StatSystem.Collections
+﻿namespace StatSystem.Collections
 {
     /// A class with properties that can be viewed or freely be changed while it undergone a journey through multiple modifiers. 
     public class Query : IQuery

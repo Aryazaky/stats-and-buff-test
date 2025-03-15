@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using StatSystem.Modifiers;
 using UnityEngine;
 
@@ -14,7 +13,6 @@ namespace StatSystem.UnityAdapters
         [SerializeField] private int priority;
         [SerializeField] private bool isExpired;
         [SerializeField] private float age;
-        [SerializeField] private bool hasTicks;
         [SerializeField] private int totalTicksElapsed;
 
         public ModifierWrapper((Modifier modifier, IAssetMetadata metadata) obj)
@@ -26,16 +24,7 @@ namespace StatSystem.UnityAdapters
             priority = modifier.Priority;
             isExpired = modifier.IsExpired;
             age = modifier.Age;
-            if (modifier is TickableModifier statModifier)
-            {
-                hasTicks = true;
-                totalTicksElapsed = statModifier.TotalTicksElapsed;
-            }
-            else
-            {
-                hasTicks = false;
-                totalTicksElapsed = 0;
-            }
+            totalTicksElapsed = modifier.TotalTicksElapsed;
         }
 
         public ModifierWrapper(Modifier modifier, IAssetMetadata metadata)
@@ -46,16 +35,7 @@ namespace StatSystem.UnityAdapters
             priority = modifier.Priority;
             isExpired = modifier.IsExpired;
             age = modifier.Age;
-            if (modifier is TickableModifier statModifier)
-            {
-                hasTicks = true;
-                totalTicksElapsed = statModifier.TotalTicksElapsed;
-            }
-            else
-            {
-                hasTicks = false;
-                totalTicksElapsed = 0;
-            }
+            totalTicksElapsed = modifier.TotalTicksElapsed;
         }
 
         public void Update((Modifier modifier, IAssetMetadata metadata) obj)
@@ -67,16 +47,7 @@ namespace StatSystem.UnityAdapters
             priority = modifier.Priority;
             isExpired = modifier.IsExpired;
             age = modifier.Age;
-            if (modifier is TickableModifier statModifier)
-            {
-                hasTicks = true;
-                totalTicksElapsed = statModifier.TotalTicksElapsed;
-            }
-            else
-            {
-                hasTicks = false;
-                totalTicksElapsed = 0;
-            }
+            totalTicksElapsed = modifier.TotalTicksElapsed;
         }
     }
 }

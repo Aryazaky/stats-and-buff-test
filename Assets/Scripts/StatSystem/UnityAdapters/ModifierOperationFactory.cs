@@ -6,13 +6,26 @@ namespace StatSystem.UnityAdapters
 {
     public abstract class ModifierOperationFactory : ScriptableObject
     {
-        protected struct ModifierTickContext
+        protected struct ModifierOnTickOperationContext
         {
             public StatCollectionStruct BaseStats { get; }
             public StatCollectionStruct DisplayedStats { get; }
             public int CurrentTick { get; }
 
-            public ModifierTickContext(StatCollectionStruct baseStats, StatCollectionStruct displayedStats, int currentTick)
+            public ModifierOnTickOperationContext(StatCollectionStruct baseStats, StatCollectionStruct displayedStats, int currentTick)
+            {
+                BaseStats = baseStats;
+                DisplayedStats = displayedStats;
+                CurrentTick = currentTick;
+            }
+        }
+        protected struct ModifierOperationContext
+        {
+            public StatCollectionStruct BaseStats { get; }
+            public StatCollectionStruct DisplayedStats { get; }
+            public int CurrentTick { get; }
+
+            public ModifierOperationContext(StatCollectionStruct baseStats, StatCollectionStruct displayedStats, int currentTick)
             {
                 BaseStats = baseStats;
                 DisplayedStats = displayedStats;
@@ -25,29 +38,26 @@ namespace StatSystem.UnityAdapters
         private void Operation(Modifier.Contexts contexts)
         {
             var queriedStats = contexts.Query.QueriedStats;
-            var baseStats = contexts.Query.BaseStats; 
-            int? currentTick = null;
-        
-            if (contexts.ModifierMetadata is ITickableMetadata tickableMetadata)
+            var baseStats = contexts.Query.BaseStats;
+
+            var modifierMetadata = contexts.ModifierMetadata;
+            var currentTick = modifierMetadata.TotalTicksElapsed;
+            if (modifierMetadata.HasUnprocessedTick)
             {
-                currentTick = tickableMetadata.TotalTicksElapsed;
-                if (tickableMetadata.HasUnprocessedTick)
+                var statCollection = ComputeOnTickStatCollection(new ModifierOnTickOperationContext(baseStats, queriedStats, currentTick));
+                foreach (var type in statCollection.Types)
                 {
-                    ComputeStatCollection(new(baseStats, queriedStats, currentTick.Value), out var statCollection);
-                    foreach (var type in statCollection.Types)
-                    {
-                        baseStats[type] = new MutableStat(statCollection[type]);
-                        queriedStats[type] = new MutableStat(statCollection[type]);
-                    }
-                    tickableMetadata.MarkTickProcessed();
+                    baseStats[type] = new MutableStat(statCollection[type]);
+                    queriedStats[type] = new MutableStat(statCollection[type]);
                 }
+                modifierMetadata.MarkTickProcessed();
             }
         
             Apply(queriedStats, currentTick);
         }
 
-        protected abstract void ComputeStatCollection(ModifierTickContext context, out StatCollectionStruct final);
+        protected abstract StatCollectionStruct ComputeOnTickStatCollection(ModifierOnTickOperationContext context);
 
-        protected abstract void Apply(IMutableStatCollection queriedStats, int? currentTick);
+        protected abstract void Apply(IMutableStatCollection queriedStats, int currentTick);
     }
 }

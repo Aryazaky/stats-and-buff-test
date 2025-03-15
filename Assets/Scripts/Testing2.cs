@@ -20,7 +20,7 @@ public class Testing2 : MonoBehaviour
 
         _base = new Stats(hp, hpRegen, strength);
 
-        var hpRegenStatus = new TickableModifier(
+        var hpRegenStatus = new Modifier(
             activePrerequisite: StatModifierActivationConditions.InvokeOnce, 
             operation: StatModifierOperations.Regen
             );
