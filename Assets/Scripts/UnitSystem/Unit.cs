@@ -12,7 +12,7 @@ namespace UnitSystem
     {
         private Stats _stats;
         [SerializeField] StatCollectionWrapper statCollection;
-        [SerializeField] ModifierFactory factory;
+        [SerializeField] ModifierSO factory;
         [SerializeField] ModifierWrapper[] modifiers;
 
         private void Start()

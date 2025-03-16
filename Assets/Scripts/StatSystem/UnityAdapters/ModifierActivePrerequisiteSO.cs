@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace StatSystem.UnityAdapters
 {
-    public abstract class ModifierActivePrerequisiteFactory : ScriptableObject
+    public abstract class ModifierActivePrerequisiteSO : ScriptableObject
     {
         public Modifier.ActivePrerequisite GetActivePrerequisite() => ActivePrerequisite;
 

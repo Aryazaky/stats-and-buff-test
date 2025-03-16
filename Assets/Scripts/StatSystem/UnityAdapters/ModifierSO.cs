@@ -1,20 +1,21 @@
 using StatSystem.Modifiers;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace StatSystem.UnityAdapters
 {
     [CreateAssetMenu(fileName = "New Modifier Factory", menuName = "Stat System/Modifiers/Modifier", order = 0)]
-    public class ModifierFactory : ScriptableObject, IModifierFactory
+    public class ModifierSO : ScriptableObject, IModifierFactory, IAssetMetadata
     {
         [SerializeField] private Sprite icon;
         [SerializeField] private string description;
         [SerializeField] private int priority;
-        [SerializeField] private ModifierActivePrerequisiteFactory prerequisiteFactory;
-        [SerializeField] private ModifierOperationFactory operationFactory;
+        [FormerlySerializedAs("prerequisiteFactory")] [SerializeField] private ModifierActivePrerequisiteSO prerequisite;
+        [FormerlySerializedAs("operationFactory")] [SerializeField] private ModifierOperationSO operation;
         
         public Modifier CreateModifier()
         {
-            return new Modifier(operationFactory.GetOperation(), priority, prerequisiteFactory.GetActivePrerequisite());
+            return new Modifier(operation.Create().Operation, priority, prerequisite.GetActivePrerequisite());
         }
 
         public string Name => name;

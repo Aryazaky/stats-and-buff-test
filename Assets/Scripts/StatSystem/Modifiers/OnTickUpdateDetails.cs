@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using StatSystem.Collections;
 
 namespace StatSystem.Modifiers

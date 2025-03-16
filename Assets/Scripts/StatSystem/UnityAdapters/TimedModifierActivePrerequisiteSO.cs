@@ -5,7 +5,7 @@ namespace StatSystem.UnityAdapters
 {
     [CreateAssetMenu(fileName = "New Modifier Active Prerequisite",
         menuName = "Stat System/Modifiers/Active Prerequisites", order = 0)]
-    public class TimedModifierActivePrerequisiteFactory : ModifierActivePrerequisiteFactory
+    public class TimedModifierActivePrerequisiteSO : ModifierActivePrerequisiteSO
     {
         private enum ActivationRequirement
         {
