@@ -61,8 +61,14 @@ namespace StatSystem.Modifiers
         public int TotalTicksElapsed { get; private set; }
         public bool HasUnprocessedTick => TotalTicksElapsed > _lastProcessedTick;
         public float LastTickTime { get; private set; }
-        public void MarkTickProcessed() => _lastProcessedTick = TotalTicksElapsed;
-        
+        public void MarkTickProcessed(OnTickUpdateDetails updateDetails)
+        {
+            _lastProcessedTick = TotalTicksElapsed;
+            LastUpdateDetails = updateDetails;
+        }
+
+        public OnTickUpdateDetails LastUpdateDetails { get; private set; }
+
         protected virtual IModifierMetadata ExtractMetadata()
         {
             return new ModifierMetadata(this);

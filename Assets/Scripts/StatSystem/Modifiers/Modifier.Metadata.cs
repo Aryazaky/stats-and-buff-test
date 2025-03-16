@@ -16,7 +16,8 @@ namespace StatSystem.Modifiers
             public int TotalTicksElapsed => _modifier.TotalTicksElapsed;
             public bool HasUnprocessedTick => _modifier.HasUnprocessedTick;
             public float LastTickTime => _modifier.LastTickTime;
-            public void MarkTickProcessed() => _modifier.MarkTickProcessed();
+            public void MarkTickProcessed(OnTickUpdateDetails updateDetails) => _modifier.MarkTickProcessed(updateDetails);
+            public OnTickUpdateDetails LastUpdateDetails => _modifier.LastUpdateDetails;
         }
     }
 }
