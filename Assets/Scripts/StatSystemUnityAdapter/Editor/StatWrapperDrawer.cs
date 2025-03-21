@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace StatSystem.UnityAdapters.Editor
+namespace StatSystemUnityAdapter.Editor
 {
     [CustomPropertyDrawer(typeof(StatWrapper))]
     public class StatWrapperDrawer : PropertyDrawer

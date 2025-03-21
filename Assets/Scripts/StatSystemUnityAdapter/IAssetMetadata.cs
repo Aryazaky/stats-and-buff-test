@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace StatSystem.UnityAdapters
+namespace StatSystemUnityAdapter
 {
     public interface IAssetMetadata
     {

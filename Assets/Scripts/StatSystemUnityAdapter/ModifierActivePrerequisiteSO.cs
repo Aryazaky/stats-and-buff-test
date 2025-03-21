@@ -1,7 +1,7 @@
 using StatSystem.Modifiers;
 using UnityEngine;
 
-namespace StatSystem.UnityAdapters
+namespace StatSystemUnityAdapter
 {
     public abstract class ModifierActivePrerequisiteSO : ScriptableObject
     {

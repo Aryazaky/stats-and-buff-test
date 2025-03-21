@@ -1,7 +1,7 @@
 using StatSystem;
 using StatSystem.Collections;
 using StatSystem.Modifiers;
-using StatSystem.UnityAdapters;
+using StatSystemUnityAdapter;
 using UnityEngine;
 
 public class Testing2 : MonoBehaviour

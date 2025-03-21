@@ -2,7 +2,7 @@ using StatSystem.Modifiers;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-namespace StatSystem.UnityAdapters
+namespace StatSystemUnityAdapter
 {
     [CreateAssetMenu(fileName = "New Modifier Factory", menuName = "Stat System/Modifiers/Modifier", order = 0)]
     public class ModifierSO : ScriptableObject, IModifierFactory, IAssetMetadata
@@ -15,7 +15,7 @@ namespace StatSystem.UnityAdapters
         
         public Modifier CreateModifier()
         {
-            return new Modifier(operation.Create().Operation, priority, prerequisite.GetActivePrerequisite());
+            return new Modifier(operation.Create().Operation, priority, prerequisite.GetActivePrerequisite(), new UnityTimeProvider());
         }
 
         public string Name => name;

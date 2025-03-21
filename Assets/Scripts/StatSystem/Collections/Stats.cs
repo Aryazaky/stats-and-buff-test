@@ -38,7 +38,7 @@ namespace StatSystem.Collections
         
         public void Update(IReadOnlyWorldContexts worldContexts)
         {
-            foreach (var tickable in Mediator.OfType<ITickable>()) tickable.Tick();
+            foreach (var tickable in Mediator) tickable.Tick();
             var temp = PerformQuery(worldContexts);
             foreach (var stat in temp)
             {

@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using StatSystem;
 using UnityEditor;
 using UnityEngine;
 
-namespace StatSystem.UnityAdapters.Editor
+namespace StatSystemUnityAdapter.Editor
 {
     [CustomPropertyDrawer(typeof(StatCollectionWrapper))]
     public class StatCollectionWrapperDrawer : PropertyDrawer

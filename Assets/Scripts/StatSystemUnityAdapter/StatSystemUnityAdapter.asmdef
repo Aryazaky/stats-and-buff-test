@@ -1,7 +1,9 @@
 {
-    "name": "StatSystem",
-    "rootNamespace": "StatSystem",
-    "references": [],
+    "name": "StatSystemUnityAdapter",
+    "rootNamespace": "StatSystemUnityAdapter",
+    "references": [
+        "GUID:2b2b7022308895b48842a4cc133740b5"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
@@ -10,5 +12,5 @@
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [],
-    "noEngineReferences": true
+    "noEngineReferences": false
 }

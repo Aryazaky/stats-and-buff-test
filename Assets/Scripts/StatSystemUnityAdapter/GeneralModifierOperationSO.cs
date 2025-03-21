@@ -1,8 +1,9 @@
+using StatSystem;
 using StatSystem.Collections;
 using StatSystem.Modifiers;
 using UnityEngine;
 
-namespace StatSystem.UnityAdapters
+namespace StatSystemUnityAdapter
 {
     [CreateAssetMenu(fileName = "New Modifier Operation", menuName = "Stat System/Modifiers/Operations", order = 0)]
     public class GeneralModifierOperationSO : ModifierOperationSO

@@ -2,7 +2,7 @@ using StatSystem.Collections;
 
 namespace StatSystem
 {
-    public static class StatUtil
+    internal static class StatUtil
     {
         public static StatCollectionStruct ToStruct(this StatCollection statCollection)
         {

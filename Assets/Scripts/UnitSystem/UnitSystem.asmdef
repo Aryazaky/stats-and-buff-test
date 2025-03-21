@@ -2,7 +2,8 @@
     "name": "UnitSystem",
     "rootNamespace": "UnitSystem",
     "references": [
-        "GUID:2b2b7022308895b48842a4cc133740b5"
+        "GUID:2b2b7022308895b48842a4cc133740b5",
+        "GUID:dfed56e78f1138f4d836005862ef43d9"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

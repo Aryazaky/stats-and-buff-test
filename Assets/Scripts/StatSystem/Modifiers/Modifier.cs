@@ -1,6 +1,5 @@
 ﻿using System;
 using StatSystem.Collections;
-using UnityEngine;
 
 namespace StatSystem.Modifiers
 {
@@ -15,26 +14,28 @@ namespace StatSystem.Modifiers
 
         private readonly Operation _operation;
         private readonly ActivePrerequisite _activePrerequisite;
+        private readonly ITimeProvider _timeProvider;
+        private readonly float _createdTime;
         private bool _isExpired;
         private bool _operationOnExpireTriggered;
-        private readonly float _createdTime;
         private int _lastProcessedTick = -1;
 
-        public Modifier(Operation operation, int priority = 0, ActivePrerequisite activePrerequisite = null)
+        public Modifier(Operation operation, int priority = 0, ActivePrerequisite activePrerequisite = null, ITimeProvider timeProvider = null)
         {
             Priority = priority;
             _operation = operation;
             _activePrerequisite = activePrerequisite ?? ((_,_) => true);
-            _createdTime = Time.time;
+            _timeProvider = timeProvider ?? TimeProvider.Instance;
+            _createdTime = _timeProvider.GetTime();
         }
 
-        public float Age => Time.time - _createdTime;
+        public float Age => _timeProvider.GetTime() - _createdTime;
 
         public int Priority { get; }
 
         public bool IsExpired { get; private set; }
 
-        public virtual void Handle(IQuery query)
+        internal virtual void Handle(IQuery query)
         {
             if (!IsExpired)
             {
@@ -55,7 +56,7 @@ namespace StatSystem.Modifiers
         public void Tick()
         {
             TotalTicksElapsed++;
-            LastTickTime = Time.time;
+            LastTickTime = _timeProvider.GetTime();
         }
 
         public int TotalTicksElapsed { get; private set; }

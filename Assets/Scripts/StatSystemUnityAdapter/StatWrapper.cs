@@ -1,7 +1,8 @@
 using System;
+using StatSystem;
 using UnityEngine;
 
-namespace StatSystem.UnityAdapters
+namespace StatSystemUnityAdapter
 {
     [Serializable]
     public struct StatWrapper : IWrapper<Stat>

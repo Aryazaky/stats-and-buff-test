@@ -1,7 +1,7 @@
 using StatSystem.Modifiers;
 using UnityEngine;
 
-namespace StatSystem.UnityAdapters
+namespace StatSystemUnityAdapter
 {
     [CreateAssetMenu(fileName = "New Modifier Active Prerequisite",
         menuName = "Stat System/Modifiers/Active Prerequisites", order = 0)]
@@ -35,7 +35,7 @@ namespace StatSystem.UnityAdapters
 
         private bool TickBasedActivation(Modifier.Contexts contexts, Modifier.IExpireTrigger trigger)
         {
-            if (contexts.ModifierMetadata is ITickableMetadata tickableMetadata)
+            if (contexts.Metadata is ITickableMetadata tickableMetadata)
             {
                 if (tickableMetadata.TotalTicksElapsed < tickDelay)
                     return false; // Delay period
@@ -54,7 +54,7 @@ namespace StatSystem.UnityAdapters
 
         private bool TimedActivation(Modifier.Contexts contexts, Modifier.IExpireTrigger trigger)
         {
-            if (contexts.ModifierMetadata is IAgeMetadata ageMetadata)
+            if (contexts.Metadata is IAgeMetadata ageMetadata)
             {
                 if (ageMetadata.Age < timeDelay)
                     return false; // Delay period
@@ -76,13 +76,13 @@ namespace StatSystem.UnityAdapters
             bool timeExpired = false;
             bool tickExpired = false;
 
-            if (contexts.ModifierMetadata is IAgeMetadata ageMetadata)
+            if (contexts.Metadata is IAgeMetadata ageMetadata)
             {
                 if (ageMetadata.Age >= (timeDelay + timeDuration))
                     timeExpired = true;
             }
 
-            if (contexts.ModifierMetadata is ITickableMetadata tickableMetadata)
+            if (contexts.Metadata is ITickableMetadata tickableMetadata)
             {
                 if (tickableMetadata.TotalTicksElapsed >= (tickDelay + tickDuration))
                     tickExpired = true;

@@ -1,7 +1,7 @@
 ﻿namespace StatSystem.Collections
 {
     /// A class with properties that can be viewed or freely be changed while it undergone a journey through multiple modifiers. 
-    public class Query : IQuery
+    internal class Query : IQuery
     {
         public StatCollection QueriedStats { get; }
         public StatCollection BaseStats { get; }

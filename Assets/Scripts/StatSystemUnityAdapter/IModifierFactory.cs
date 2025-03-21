@@ -1,8 +1,8 @@
 using StatSystem.Modifiers;
 
-namespace StatSystem.UnityAdapters
+namespace StatSystemUnityAdapter
 {
-    public interface IModifierFactory
+    internal interface IModifierFactory
     {
         Modifier CreateModifier();
     }

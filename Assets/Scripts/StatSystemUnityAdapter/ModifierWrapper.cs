@@ -2,7 +2,7 @@ using System;
 using StatSystem.Modifiers;
 using UnityEngine;
 
-namespace StatSystem.UnityAdapters
+namespace StatSystemUnityAdapter
 {
     [Serializable]
     public struct ModifierWrapper : IWriteOnlyWrapper<(Modifier modifier, IAssetMetadata metadata)>

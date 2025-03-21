@@ -3,7 +3,7 @@ using System.Linq;
 using StatSystem.Collections;
 using UnityEngine;
 
-namespace StatSystem.UnityAdapters
+namespace StatSystemUnityAdapter
 {
     [Serializable]
     public struct StatCollectionWrapper : IWrapper<StatCollectionStruct>

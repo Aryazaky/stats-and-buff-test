@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using StatSystem;
 using StatSystem.Collections;
-using StatSystem.UnityAdapters;
+using StatSystemUnityAdapter;
 using UnityEngine;
 
 namespace UnitSystem

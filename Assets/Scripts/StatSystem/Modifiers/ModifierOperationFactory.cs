@@ -10,7 +10,7 @@ namespace StatSystem.Modifiers
         {
             var queriedStats = contexts.Query.QueriedStats;
             var baseStats = contexts.Query.BaseStats;
-            var modifierMetadata = contexts.ModifierMetadata;
+            var modifierMetadata = contexts.Metadata;
             int currentTick = modifierMetadata.TotalTicksElapsed;
             var updateDetails = CreateOnTickUpdate(currentTick, new ReadOnlyStatIndexer(baseStats), new ReadOnlyStatIndexer(queriedStats));
 
