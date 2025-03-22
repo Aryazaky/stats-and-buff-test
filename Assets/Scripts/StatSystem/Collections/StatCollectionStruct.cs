@@ -8,9 +8,9 @@ namespace StatSystem.Collections
     {
         private readonly Dictionary<StatType, Stat> _stats;
 
-        public StatCollectionStruct(params Stat[] stats) => _stats = stats.ToDictionary(stat => stat.Type);
+        public StatCollectionStruct(params Stat[] stats) => _stats = stats.Distinct(new StatTypeEqualityComparer()).ToDictionary(stat => stat.Type);
 
-        public StatCollectionStruct(IEnumerable<Stat> stats) => _stats = stats.ToDictionary(stat => stat.Type);
+        public StatCollectionStruct(IEnumerable<Stat> stats) => _stats = stats.Distinct(new StatTypeEqualityComparer()).ToDictionary(stat => stat.Type);
 
         public Stat this[StatType type]
         {

@@ -14,16 +14,21 @@ namespace StatSystemUnityAdapter
                 ReadOnlyStatIndexer queriedStats)
             {
                 // Calculate regen value from queriedStats.
-                // (Assuming queriedStats stores the latest HealthRegen value.)
-                float regenValue = queriedStats[StatType.HealthRegen].Value;
+                float regenValue = 0;
+                if (queriedStats.TryGetStat(StatType.HealthRegen, out var regenStat))
+                {
+                    regenValue = regenStat.Value;
+                }
 
                 // OnTickUpdateDetails captures all variables in a closure
                 return new OnTickUpdateDetails(stats =>
                 {
-                    stats[StatType.Health] += regenValue;
+                    // Affects base stats too
+                    stats.SafeEdit(StatType.Health, stat => stat.Value += regenValue);
                 }, stats =>
                 {
-                    stats[StatType.Strength] += 2 * currentTick;
+                    // Affects only the end result stat
+                    stats.SafeEdit(StatType.Strength, stat => stat.Value += 2 * currentTick);
                 });
             }
         }

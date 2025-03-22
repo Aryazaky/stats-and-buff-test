@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd5ae126007d4640aa997dd766ad9ece, type: 3}
   m_Name: New Modifier Active Prerequisite
   m_EditorClassIdentifier: 
-  activationRequirement: 1
+  activationRequirement: 0
   tickDelay: 0
   tickDuration: 3
   timeDelay: 0

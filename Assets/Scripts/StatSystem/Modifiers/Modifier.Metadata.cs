@@ -2,7 +2,7 @@ namespace StatSystem.Modifiers
 {
     public partial class Modifier
     {
-        public readonly struct ModifierMetadata : IModifierMetadata
+        private readonly struct ModifierMetadata : IModifierMetadata
         {
             private readonly Modifier _modifier;
             public ModifierMetadata(Modifier modifier)

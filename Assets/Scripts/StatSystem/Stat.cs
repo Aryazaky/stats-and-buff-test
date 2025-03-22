@@ -33,8 +33,8 @@ namespace StatSystem
         /// <exception cref="ArgumentException">Thrown if precision is negative, or if max is less than min.</exception>
         public Stat(StatType type, float value, float? min = 0, float? max = null, int precision = 0)
         {
-            if (precision < 0)
-                throw new ArgumentException("Decimal places cannot be negative.", nameof(precision));
+            if (precision is < 0 or > 15)
+                throw new ArgumentException("Decimal places must be between 0 and 15.", nameof(precision));
 
             Type = type;
             Precision = precision;

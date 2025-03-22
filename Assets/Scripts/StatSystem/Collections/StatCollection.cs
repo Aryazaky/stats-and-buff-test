@@ -13,12 +13,15 @@ namespace StatSystem.Collections
 
         public StatCollection(IEnumerable<Stat> stats) => _stats = stats.Select(stat => new MutableStat(stat)).ToDictionary(stat => stat.Type);
         
-        public void SafeEdit(StatType type, Action<MutableStat> editAction)
+        public bool SafeEdit(StatType type, Action<MutableStat> editAction)
         {
             if (_stats.TryGetValue(type, out var stat))
             {
                 editAction(stat);
+                return true;
             }
+
+            return false;
         }
 
         public MutableStat this[StatType type]

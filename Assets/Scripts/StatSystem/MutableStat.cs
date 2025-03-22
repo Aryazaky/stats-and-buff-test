@@ -73,9 +73,9 @@ namespace StatSystem
             get => _precision;
             set
             {
-                if (value < 0)
+                if (value is < 0 or > 15)
                 {
-                    throw new Exception($"Decimal places precision ({value}) cannot be negative.");
+                    throw new Exception($"Decimal places precision ({value}) must be between 0 and 15.");
                 }
                 _precision = value;
                 Value = Value;
@@ -85,13 +85,8 @@ namespace StatSystem
         /// <summary>
         /// Converts a Stat into a ModifiableStat class. 
         /// </summary>
-        public MutableStat(Stat stat)
+        public MutableStat(Stat stat) : this(stat.Type, stat.Value, stat.Min, stat.Max, stat.Precision)
         {
-            Type = stat.Type;
-            Min = stat.Min;
-            Max = stat.Max;
-            Precision = stat.Precision;
-            Value = stat.Value;
         }
 
         public MutableStat(StatType type, float value, float? min = 0, float? max = null, int precision = 0)
@@ -119,22 +114,6 @@ namespace StatSystem
         {
             return new Stat(type: stat.Type, value: stat.Value, min: stat.Min, max: stat.Max, precision: stat.Precision);
         }
-
-        private MutableStat PerformOperation(float value, Func<float, float, float> operation)
-        {
-            var temp = Clone();
-            temp.Value = operation(Value, value);
-            return temp;
-        }
-        
-        public static MutableStat operator +(MutableStat stat, float value) => stat.PerformOperation(value, (x, y) => x + y);
-        public static MutableStat operator +(float value, MutableStat stat) => stat + value;
-        public static MutableStat operator -(MutableStat stat, float value) => stat.PerformOperation(value, (x, y) => x - y);
-        public static MutableStat operator -(float value, MutableStat stat) => stat.PerformOperation(value, (x, y) => y - x);
-        public static MutableStat operator *(MutableStat stat, float value) => stat.PerformOperation(value, (x, y) => x * y);
-        public static MutableStat operator *(float value, MutableStat stat) => stat * value;
-        public static MutableStat operator /(MutableStat stat, float value) => stat.PerformOperation(value, (x, y) => x / y);
-        public static MutableStat operator /(float value, MutableStat stat) => stat.PerformOperation(value, (x, y) => y / x);
 
         public override string ToString()
         {

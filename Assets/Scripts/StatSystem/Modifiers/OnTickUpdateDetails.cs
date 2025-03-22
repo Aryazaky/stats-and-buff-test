@@ -19,8 +19,8 @@ namespace StatSystem.Modifiers
         public Action<IMutableStatCollection> NonSynchronizedUpdate { get; }
 
         public OnTickUpdateDetails(
-            Action<IMutableStatCollection> synchronizedUpdates,
-            Action<IMutableStatCollection> nonSynchronizedUpdates)
+            Action<IMutableStatCollection> synchronizedUpdates = null,
+            Action<IMutableStatCollection> nonSynchronizedUpdates = null)
         {
             SynchronizedUpdate = synchronizedUpdates ?? (_ => {});
             NonSynchronizedUpdate = nonSynchronizedUpdates ?? (_ => {});
