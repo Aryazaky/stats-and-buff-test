@@ -16,10 +16,13 @@ namespace StatSystemUnityAdapter
         }
 
         [SerializeField] private ActivationRequirement activationRequirement;
-        [SerializeField] private int tickDelay = 0;
-        [SerializeField] private int tickDuration = 3;
-        [SerializeField] private int timeDelay = 0;
-        [SerializeField] private int timeDuration = 2;
+        [SerializeField, Min(0)] private int tickDelay = 0;
+        [SerializeField, Min(0)] private int tickDuration = 3;
+        [SerializeField, Min(0)] private int tickInterval = 0;
+
+        [SerializeField, Min(0)] private float timeDelay = 0f;
+        [SerializeField, Min(0)] private float timeDuration = 2f;
+        [SerializeField, Min(0)] private float timeInterval = 0;
 
         protected override bool ActivePrerequisite(Modifier.Contexts contexts, Modifier.IExpireTrigger trigger)
         {
@@ -33,68 +36,61 @@ namespace StatSystemUnityAdapter
             };
         }
 
-        private bool TickBasedActivation(Modifier.Contexts contexts, Modifier.IExpireTrigger trigger)
+        private bool TickBasedActivation(Modifier.Contexts contexts, Modifier.IExpireTrigger trigger, bool allowExpire = true)
         {
-            if (contexts.Metadata is ITickableMetadata tickableMetadata)
+            if (contexts.Metadata.TotalTicksElapsed < tickDelay)
+                return false; // Delay period
+
+            if (tickInterval > 0)
+                return IsWithinPulse(contexts.Metadata.TotalTicksElapsed, tickDelay, tickDuration, tickInterval);
+
+            bool allow = contexts.Metadata.TotalTicksElapsed < (tickDelay + tickDuration);
+            if (!allow && allowExpire)
             {
-                if (tickableMetadata.TotalTicksElapsed < tickDelay)
-                    return false; // Delay period
-
-                bool allow = tickableMetadata.TotalTicksElapsed < (tickDelay + tickDuration);
-                if (!allow)
-                {
-                    trigger.Expire();
-                }
-
-                return allow;
+                trigger.Expire();
             }
 
-            return false;
+            return allow;
         }
 
-        private bool TimedActivation(Modifier.Contexts contexts, Modifier.IExpireTrigger trigger)
+        private bool TimedActivation(Modifier.Contexts contexts, Modifier.IExpireTrigger trigger, bool allowExpire = true)
         {
-            if (contexts.Metadata is IAgeMetadata ageMetadata)
+            if (contexts.Metadata.Age < timeDelay)
+                return false; // Delay period
+
+            if (timeInterval > 0)
+                return IsWithinPulse(contexts.Metadata.Age, timeDelay, timeDuration, timeInterval);
+
+            bool allow = contexts.Metadata.Age < (timeDelay + timeDuration);
+            if (!allow && allowExpire)
             {
-                if (ageMetadata.Age < timeDelay)
-                    return false; // Delay period
-
-                bool allow = ageMetadata.Age < (timeDelay + timeDuration);
-                if (!allow)
-                {
-                    trigger.Expire();
-                }
-
-                return allow;
+                trigger.Expire();
             }
 
-            return false;
+            return allow;
         }
 
         private bool TimedOrTickBasedActivation(Modifier.Contexts contexts, Modifier.IExpireTrigger trigger)
         {
-            bool timeExpired = false;
-            bool tickExpired = false;
+            bool tickActive = TickBasedActivation(contexts, trigger, false);
+            bool timeActive = TimedActivation(contexts, trigger, false);
 
-            if (contexts.Metadata is IAgeMetadata ageMetadata)
-            {
-                if (ageMetadata.Age >= (timeDelay + timeDuration))
-                    timeExpired = true;
-            }
-
-            if (contexts.Metadata is ITickableMetadata tickableMetadata)
-            {
-                if (tickableMetadata.TotalTicksElapsed >= (tickDelay + tickDuration))
-                    tickExpired = true;
-            }
-
-            if (timeExpired || tickExpired)
+            if (!tickActive && !timeActive)
             {
                 trigger.Expire();
                 return false;
             }
 
             return true;
+        }
+
+        private static bool IsWithinPulse(float current, float delay, float duration, float interval)
+        {
+            if (current < delay)
+                return false; // Still in initial delay
+
+            float cycleStart = delay + Mathf.Floor((current - delay) / interval) * interval;
+            return current >= cycleStart && current < (cycleStart + duration);
         }
     }
 }

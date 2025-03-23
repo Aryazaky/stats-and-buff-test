@@ -6,25 +6,24 @@ using UnityEngine;
 
 namespace StatSystemUnityAdapter
 {
-    [CreateAssetMenu(fileName = "New Stat Average Modifier", menuName = "Stat System/Modifiers/Stat Average",
+    [CreateAssetMenu(fileName = "New Average Modifier Operation", menuName = "Stat System/Modifiers/Operations/Average",
         order = 4)]
     public class StatAverageModifierSO : ModifierOperationSO
     {
-        public StatType TargetStat;
-        public List<StatType> Stats;
-        public float Multiplier;
+        [SerializeField] private StatType targetStat;
+        [SerializeField] private List<StatType> stats;
+        [SerializeField] private float multiplier = 1;
 
         private class StatAverageFactory : ModifierOperationFactory
         {
             private readonly StatAverageModifierSO _data;
             public StatAverageFactory(StatAverageModifierSO data) => _data = data;
 
-            protected override OnTickUpdateDetails CreateOnTickUpdate(int currentTick, ReadOnlyStatIndexer baseStats,
-                ReadOnlyStatIndexer queriedStats)
+            protected override UpdateDetails CreateUpdateDetails(int currentTick, ReadOnlyStatIndexer baseStats, ReadOnlyStatIndexer queriedStats)
             {
                 float sum = 0;
                 int count = 0;
-                foreach (var statType in _data.Stats)
+                foreach (var statType in _data.stats)
                 {
                     if (queriedStats.TryGetStat(statType, out var stat))
                     {
@@ -33,9 +32,9 @@ namespace StatSystemUnityAdapter
                     }
                 }
 
-                float avg = count > 0 ? (sum / count) * _data.Multiplier : 0;
-
-                return new OnTickUpdateDetails(stats => stats.SafeEdit(_data.TargetStat, stat => stat.Value += avg));
+                float avg = count > 0 ? (sum / count) * _data.multiplier : 0;
+                return new UpdateDetails(_data.applyToBaseStats, stats =>
+                    stats.SafeEdit(_data.targetStat, stat => stat.Value += avg));
             }
         }
 

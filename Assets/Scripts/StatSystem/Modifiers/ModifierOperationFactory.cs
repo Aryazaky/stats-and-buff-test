@@ -12,11 +12,11 @@ namespace StatSystem.Modifiers
             var baseStats = contexts.Query.BaseStats;
             var modifierMetadata = contexts.Metadata;
             int currentTick = modifierMetadata.TotalTicksElapsed;
-            var updateDetails = CreateOnTickUpdate(currentTick, new ReadOnlyStatIndexer(baseStats), new ReadOnlyStatIndexer(queriedStats));
+            var updateDetails = CreateUpdateDetails(currentTick, new ReadOnlyStatIndexer(baseStats), new ReadOnlyStatIndexer(queriedStats));
 
             if (modifierMetadata.HasUnprocessedTick)
             {
-                updateDetails.SynchronizedUpdate?.Invoke(baseStats);
+                updateDetails.SyncedUpdate?.Invoke(baseStats);
                 modifierMetadata.MarkTickProcessed(updateDetails);
             }
             else if (modifierMetadata.LastUpdateDetails != null)
@@ -24,10 +24,10 @@ namespace StatSystem.Modifiers
                 updateDetails = modifierMetadata.LastUpdateDetails;
             }
 
-            updateDetails.SynchronizedUpdate?.Invoke(queriedStats);
-            updateDetails.NonSynchronizedUpdate?.Invoke(queriedStats);
+            updateDetails.SyncedUpdate?.Invoke(queriedStats);
+            updateDetails.NonSyncedUpdate?.Invoke(queriedStats);
         }
 
-        protected abstract OnTickUpdateDetails CreateOnTickUpdate(int currentTick, ReadOnlyStatIndexer baseStats, ReadOnlyStatIndexer queriedStats);
+        protected abstract UpdateDetails CreateUpdateDetails(int currentTick, ReadOnlyStatIndexer baseStats, ReadOnlyStatIndexer queriedStats);
     }
 }

@@ -5,7 +5,7 @@ namespace StatSystem.Modifiers
         int TotalTicksElapsed { get; }
         bool HasUnprocessedTick { get; }
         float LastTickTime { get; }
-        void MarkTickProcessed(OnTickUpdateDetails updateDetails);
-        OnTickUpdateDetails LastUpdateDetails { get; }
+        void MarkTickProcessed(UpdateDetails updateDetails);
+        UpdateDetails LastUpdateDetails { get; }
     }
 }
